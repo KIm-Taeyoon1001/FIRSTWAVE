@@ -5,9 +5,9 @@ import { dirname, resolve } from 'node:path';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const port = Number(process.env.PORT || 3000);
-const css = (await readFile(resolve(root, 'src/app/globals.css'), 'utf8')).replace('@import "tailwindcss";', '');
-export const html = `<!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+const css = (await readFile(resolve(root, 'src/app/globals.css'), 'utf8')).replace('@import "tailwindcss";', '') + '\n' + await readFile(resolve(root, 'src/app/polish.css'), 'utf8');
+const baseHtml = `<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="FIRSTWAVE connects developers with early users for meaningful beta testing and product feedback."><meta name="theme-color" content="#101A16">
 <title>FIRSTWAVE — Local design preview</title><style>${css}</style>
 <style>.preview-banner{padding:10px 20px;text-align:center;background:#e4f5eb;color:#146e48;font:600 12px Inter,Arial,sans-serif}.preview-banner a{text-decoration:underline}.preview-badge{display:inline-block;margin-left:6px;padding:3px 7px;border:1px solid #b7dbc5;border-radius:4px}</style></head><body>
 <div class="preview-banner">Local design preview <span class="preview-badge">App actions require Next.js and Supabase setup</span> <a href="#setup">Setup notes</a></div>
@@ -18,6 +18,17 @@ export const html = `<!doctype html>
 <section class="section dark" id="developers"><div class="container two-col"><div><span class="eyebrow">Built for developers</span><h2 style="font-size:42px;line-height:1.15;margin:17px 0">The workspace behind a better launch.</h2><p style="color:#a5b6a8">Keep recruitment, applications, and feedback in one focused place.</p><a class="button" href="#setup">Set up the full app →</a></div><div class="feature-pane"><div class="feature-row"><span>Qualified applications</span><span class="pill dark">Review</span></div><div class="feature-row"><span>Controlled access</span><span class="pill dark">Select</span></div><div class="feature-row"><span>Structured feedback</span><span class="pill dark">Learn</span></div><div class="feature-row"><span>Campaign overview</span><span class="pill dark">Improve</span></div></div></div></section>
 <section class="section" id="setup"><div class="container"><div class="section-heading"><div><span class="eyebrow">Run the complete app</span><h2>Next.js setup</h2></div></div><div class="card"><p>The full FIRSTWAVE app is in the project source. Install packages with <code>npm install</code>, configure <code>.env.local</code> using <code>.env.example</code>, apply the Supabase migrations, then run <code>npm run dev</code>. This preview runs without packages because this environment currently blocks npm downloads.</p></div></div></section>
 <footer class="footer"><div class="container footer-inner"><div><a class="brand" href="/"><span class="brand-mark"></span>FIRSTWAVE</a><p>Where Great Apps Meet Their Users.</p></div><div class="footer-links"><a href="#projects">Explore</a><a href="#workflow">How It Works</a><a href="#setup">Setup</a></div></div></footer></body></html>`;
+
+const brand = `<a class="brand" href="/" aria-label="FIRSTWAVE home"><svg class="brand-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true"><rect width="48" height="48" rx="13" fill="#16A36A"/><path d="M8 27.5c4.8 0 4.8-10 9.6-10s4.8 10 9.6 10 4.8-10 9.6-10" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M8 35c4.8 0 4.8-10 9.6-10s4.8 10 9.6 10 4.8-10 9.6-10" stroke="#fff" stroke-opacity=".43" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="brand-lockup"><strong>FIRST<span>WAVE</span></strong><small>BUILD · LAUNCH · LEARN</small></span></a>`;
+const mobileNav = `<details class="mobile-nav"><summary aria-label="Open navigation"><span></span><span></span><span></span></summary><nav aria-label="Mobile navigation"><a href="#projects">Explore</a><a href="#workflow">How It Works</a><a href="#developers">For Developers</a><a href="#setup">Early Access</a></nav></details>`;
+const icon = path => `<div class="iconbox"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${path}"/></svg></div>`;
+export const html = baseHtml
+  .replaceAll('<a class="brand" href="/"><span class="brand-mark"></span>FIRSTWAVE</a>', brand)
+  .replace('</title><style>', '</title><link rel="icon" href="/favicon.svg" type="image/svg+xml"><style>')
+  .replace('<div class="nav-actions"><a class="login-link" href="#setup">Log In</a><a class="button small" href="#setup">Get Started</a></div></div>', '<div class="nav-actions"><a class="login-link" href="#setup">Log In</a><a class="button small" href="#setup">Get Started</a></div>' + mobileNav + '</div>')
+  .replace('<div class="iconbox">01</div>', icon('m8 8-4 4 4 4m8-8 4 4-4 4m-3-11-2 18'))
+  .replace('<div class="iconbox">02</div>', icon('M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2m16-12a4 4 0 1 1 0 8m4 4v-2a4 4 0 0 0-3-3.87M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8'))
+  .replace('<div class="iconbox">03</div>', icon('M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5Z'));
 const server = createServer((req, res) => {
   if (req.url === '/health') { res.writeHead(200, { 'content-type': 'application/json' }); res.end(JSON.stringify({ ok: true, mode: 'static-preview' })); return; }
   if (req.url !== '/') { res.writeHead(404, { 'content-type': 'text/plain' }); res.end('Not found'); return; }
