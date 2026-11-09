@@ -1,0 +1,2 @@
+import { ProjectForm } from '@/components/project-form';
+export default async function NewProject({searchParams}:{searchParams:Promise<{message?:string}>}) { const {message}=await searchParams; return <><span className="eyebrow">New campaign</span><h1>Create a project</h1><p className="sub">Start as a draft. Submit for moderation when the details are ready.</p>{message&&<div className="message">{message}</div>}<div className="panel"><ProjectForm/></div></>; }
