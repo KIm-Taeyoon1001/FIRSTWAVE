@@ -16,14 +16,14 @@ export function PublicHeader({ dark = false }: { dark?: boolean }) {
     <div className="container site-header">
       <Brand/>
       <nav className="nav-links" aria-label="Primary navigation" style={dark ? {} : {color:'#55675a'}}>
-        <Link href="/explore">Explore</Link><Link href="/how-it-works">How It Works</Link><Link href="/#developers">For Developers</Link><Link href="/pricing">Pricing</Link>
+        <Link href="/explore">Explore</Link><Link href="/how-it-works">How It Works</Link><Link href="/developers">For Developers</Link><Link href="/pricing">Pricing</Link>
       </nav>
       <div className="nav-actions"><Link className="login-link" href="/login">Log In</Link><Link className="button small" href="/signup">Get Started</Link></div>
-      <details className="mobile-nav"><summary aria-label="Open navigation"><span/><span/><span/></summary><nav aria-label="Mobile navigation"><Link href="/explore">Explore</Link><Link href="/how-it-works">How It Works</Link><Link href="/#developers">For Developers</Link><Link href="/pricing">Pricing</Link><Link href="/login">Log In</Link></nav></details>
+      <details className="mobile-nav"><summary aria-label="Open navigation"><span/><span/><span/></summary><nav aria-label="Mobile navigation"><Link href="/explore">Explore</Link><Link href="/how-it-works">How It Works</Link><Link href="/developers">For Developers</Link><Link href="/pricing">Pricing</Link><Link href="/login">Log In</Link></nav></details>
     </div>
   </header>;
 }
 
 export function Footer() {
-  return <footer className="footer"><div className="container footer-inner"><div><Brand/><p>Where Great Apps Meet Their Users.</p><p>© {new Date().getFullYear()} FIRSTWAVE</p></div><div className="footer-links"><Link href="/explore">Explore</Link><Link href="/how-it-works">How It Works</Link><Link href="/pricing">Pricing</Link><Link href="/signup">Get Started</Link></div></div></footer>;
+  return <footer className="footer"><div className="container footer-inner"><div><Brand/><p>Where Great Apps Meet Their Users.</p><p>© {new Date().getFullYear()} FIRSTWAVE</p></div><div className="footer-links"><Link href="/explore">Explore</Link><Link href="/how-it-works">How It Works</Link><Link href="/developers">For Developers</Link><Link href="/pricing">Pricing</Link><Link href="/signup">Get Started</Link></div></div></footer>;
 }

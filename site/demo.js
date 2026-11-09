@@ -44,6 +44,7 @@ function startDashboard() {
   function render() {
     const projects = read();
     const headings = {overview:['Overview','Your campaign workspace in one place.'],projects:['My Projects','Create and prepare your beta campaigns.'],applications:['Applications','Applicant review will be available with live accounts.'],feedback:['Feedback','Structured responses will appear after tester participation.'],analytics:['Analytics','Campaign numbers come from your local preview projects.'],editor:[editId ? 'Edit project' : 'New project','Prepare your campaign before moderation.']};
+    headings.settings = ['Demo settings', 'Manage the data stored in this browser.'];
     [title.textContent, description.textContent] = headings[view];
     nav.forEach(button => button.classList.toggle('active',button.dataset.view === view));
     newButton.hidden = view === 'editor';
@@ -52,6 +53,7 @@ function startDashboard() {
     if (view === 'applications') viewRoot.innerHTML = `<section class="demo-panel"><h2>Received applications</h2>${empty('No applications yet','Real testers can apply after your project is published on the connected service.')}</section><section class="demo-panel"><h2>My tester applications</h2>${empty('No participation yet','Explore and apply to campaigns when the live marketplace opens.')}</section>`;
     if (view === 'feedback') viewRoot.innerHTML = `<section class="demo-panel"><h2>Project feedback</h2>${empty('No feedback yet','Responses from approved testers will appear here.')}</section>`;
     if (view === 'analytics') viewRoot.innerHTML = `<div class="demo-grid"><div class="demo-metric"><span>Total projects</span><strong>${projects.length}</strong></div><div class="demo-metric"><span>Applications received</span><strong>0</strong></div><div class="demo-metric"><span>Feedback submitted</span><strong>0</strong></div></div><section class="demo-panel"><h2>Project breakdown</h2>${projects.length ? projects.map(p => `<div class="feature-row"><span>${escape(p.name)}</span><span class="demo-status ${escape(p.status)}">${escape(p.status.replace('_',' '))}</span></div>`).join('') : empty('No analytics yet','Create a project to begin tracking your campaigns.')}</section>`;
+    if (view === 'settings') viewRoot.innerHTML = `<section class="demo-panel"><span class="eyebrow">LOCAL PREVIEW</span><h2 style="margin-top:14px">Your browser is the workspace</h2><p style="color:#68776d;font-size:13px">${projects.length} local ${projects.length === 1 ? 'project is' : 'projects are'} saved on this device. This demo does not sync with an account or database.</p><button class="button light" data-action="clear">Clear local projects</button></section><section class="demo-panel"><h2>Ready for the real platform?</h2><p style="color:#68776d;font-size:13px">Real sign in, team access, tester applications, and feedback will be enabled after the service is connected.</p><a class="small-link" href="/developers/">See the developer workflow →</a></section>`;
     if (view === 'editor') {
       const project = projects.find(p => p.id === editId) || {};
       const selected = (value, current) => value === current ? 'selected' : '';
@@ -73,6 +75,7 @@ function startDashboard() {
   viewRoot.addEventListener('click', event => {
     const button = event.target.closest('[data-action]'); if (!button) return;
     const id = button.dataset.id, action = button.dataset.action;
+    if (action === 'clear') { if (window.confirm('Clear all local demo projects from this browser?')) { localStorage.removeItem(PROJECTS_KEY); render(); } return; }
     if (action === 'edit') { editId = id; view = 'editor'; render(); return; }
     if (action === 'delete' && !window.confirm('Delete this local demo project?')) return;
     const list = read(); const index = list.findIndex(p => p.id === id); if (index < 0) return;
