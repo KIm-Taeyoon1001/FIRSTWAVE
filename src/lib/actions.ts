@@ -53,7 +53,9 @@ export async function saveProfile(form: FormData) {
   const { client, user } = await requireSession();
   const display_name = value(form,'display_name');
   if (display_name.length < 2 || display_name.length > 80) go('/dashboard/profile', 'Name must be 2–80 characters');
-  const { error } = await client.from('profiles').update({ display_name, bio: value(form,'bio').slice(0,1000) }).eq('user_id', user.id);
+  const allowed = new Set(['Productivity','Developer Tools','Design','Education','Finance','Other']);
+  const tester_interests = form.getAll('tester_interests').map(String).filter(item => allowed.has(item));
+  const { error } = await client.from('profiles').update({ display_name, bio: value(form,'bio').slice(0,1000), devices: value(form,'devices').slice(0,300), tester_interests }).eq('user_id', user.id);
   if (error) go('/dashboard/profile', error.message);
   revalidatePath('/dashboard/profile');
   go('/dashboard/profile', 'Profile saved');
@@ -150,10 +152,54 @@ export async function submitFeedback(form: FormData) {
   const project_id = value(form,'project_id');
   const parsed = z.object({ overall_rating: z.coerce.number().int().min(1).max(5), usability_rating: z.coerce.number().int().min(1).max(5) }).safeParse({ overall_rating: value(form,'overall_rating'), usability_rating: value(form,'usability_rating') });
   if (!parsed.success) go('/dashboard/feedback','Choose both ratings');
-  const { error } = await client.from('feedbacks').insert({ project_id, tester_id: user.id, ...parsed.data, bugs: value(form,'bugs'), feature_requests: value(form,'feature_requests'), comments: value(form,'comments') });
+  const { data: questions, error: questionError } = await client.from('feedback_questions').select('id,kind,required').eq('project_id',project_id);
+  if (questionError) go('/dashboard/feedback',questionError.message);
+  const answers: Record<string,string> = {};
+  for (const question of questions || []) {
+    const answer = value(form,`answer_${question.id}`);
+    if (question.required && !answer) go('/dashboard/feedback','Answer all required questions');
+    if (answer && question.kind === 'rating' && !/^[1-5]$/.test(answer)) go('/dashboard/feedback','Choose a valid question rating');
+    if (answer && question.kind === 'yes_no' && !['yes','no'].includes(answer)) go('/dashboard/feedback','Choose yes or no');
+    if (answer.length > 3000) go('/dashboard/feedback','A feedback answer is too long');
+    if (answer) answers[question.id] = answer;
+  }
+  const { error } = await client.from('feedbacks').insert({ project_id, tester_id: user.id, ...parsed.data, answers, bugs: value(form,'bugs'), feature_requests: value(form,'feature_requests'), comments: value(form,'comments') });
   if (error) go('/dashboard/feedback', error.message);
   revalidatePath('/dashboard/feedback');
   go('/dashboard/feedback', 'Feedback submitted');
+}
+export async function createFeedbackQuestion(form: FormData) {
+  const { client, user } = await requireSession();
+  const project_id = value(form,'project_id'), prompt = value(form,'prompt');
+  const kind = value(form,'kind');
+  if (prompt.length < 5 || prompt.length > 300 || !['text','rating','yes_no'].includes(kind)) go(`/dashboard/projects/${project_id}`,'Enter a valid feedback question');
+  const { data: project } = await client.from('projects').select('status').eq('id',project_id).eq('maker_id',user.id).single();
+  if (!project || ['pending_review','completed'].includes(project.status)) go(`/dashboard/projects/${project_id}`,'Questions cannot be edited now');
+  const { data: latest } = await client.from('feedback_questions').select('sort_order').eq('project_id',project_id).order('sort_order',{ascending:false}).limit(1).maybeSingle();
+  const { error } = await client.from('feedback_questions').insert({ project_id, prompt, kind, required: form.get('required') === 'on', sort_order: (latest?.sort_order || 0) + 1 });
+  if (error) go(`/dashboard/projects/${project_id}`,error.message);
+  revalidatePath(`/dashboard/projects/${project_id}`);
+  go(`/dashboard/projects/${project_id}`,'Question added');
+}
+export async function deleteFeedbackQuestion(form: FormData) {
+  const { client, user } = await requireSession();
+  const project_id = value(form,'project_id'), id = value(form,'id');
+  const { data: project } = await client.from('projects').select('status').eq('id',project_id).eq('maker_id',user.id).single();
+  if (!project || ['pending_review','completed'].includes(project.status)) go(`/dashboard/projects/${project_id}`,'Questions cannot be edited now');
+  const { error } = await client.from('feedback_questions').delete().eq('id',id).eq('project_id',project_id).select('id').single();
+  if (error) go(`/dashboard/projects/${project_id}`,error.message);
+  revalidatePath(`/dashboard/projects/${project_id}`);
+  go(`/dashboard/projects/${project_id}`,'Question removed');
+}
+export async function markNotificationRead(form: FormData) {
+  const { client, user } = await requireSession();
+  const id = value(form,'id');
+  let query = client.from('notifications').update({read_at:new Date().toISOString()}).eq('user_id',user.id).is('read_at',null);
+  if (id) query = query.eq('id',id);
+  const { error } = await query;
+  if (error) go('/dashboard/notifications',error.message);
+  revalidatePath('/dashboard/notifications');
+  redirect('/dashboard/notifications');
 }
 export async function adminDecision(form: FormData) {
   const { client, user } = await requireSession();
@@ -161,7 +207,9 @@ export async function adminDecision(form: FormData) {
   if (!admin?.is_admin) redirect('/dashboard');
   const entity = value(form,'entity'), id = value(form,'id'), decision = value(form,'decision');
   if (entity === 'project' && ['published','rejected'].includes(decision)) {
-    const { error } = await client.from('projects').update({ status: decision, reviewed_at: new Date().toISOString() }).eq('id',id).eq('status','pending_review').select('id').single();
+    const note = value(form,'note').slice(0,1000);
+    if (decision === 'rejected' && note.length < 5) go('/admin/projects','Give a reason for rejection');
+    const { error } = await client.from('projects').update({ status: decision, reviewed_at: new Date().toISOString(), moderation_note: decision === 'rejected' ? note : null }).eq('id',id).eq('status','pending_review').select('id').single();
     if (error) go('/admin/projects',error.message);
   } else if (entity === 'user' && ['true','false'].includes(decision)) {
     const { error } = await client.from('users').update({ is_suspended: decision === 'true' }).eq('id',id).select('id').single();

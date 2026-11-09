@@ -6,7 +6,7 @@ FIRSTWAVE is a desktop-first beta testing marketplace for makers and testers. Th
 
 The deployable static marketing site is committed in `site/`. In Cloudflare Pages, connect this GitHub repository, select the **None** framework preset, leave the build command empty, and set the build output directory to `site`. No environment variables or server runtime are needed for this static site. To regenerate it after editing the source, run `npm run build:static` and commit the updated `site/` files.
 
-The `site/` deployment is an informational landing page. It does not expose login, project submissions, or tester applications. The Next.js app in `src/` is retained for a future server-backed deployment and needs the Supabase setup below.
+The `site/` deployment includes an interactive **local demo** at `/login/` and `/dashboard/`. Use `demo@firstwave.app` / `Firstwave123!` to enter. This is a public preview credential, not a real account. Demo projects are stored only in the current browser's `localStorage`; the login flag is stored in `sessionStorage`. Anyone can inspect the credential and local data. Do not enter private information in the demo. Real authentication, applications, moderation, feedback, and shared data require the Next.js app and Supabase setup below.
 
 ## Local development
 
@@ -14,7 +14,7 @@ Requirements: Node.js 20.9 or newer, npm, and a Supabase project.
 
 1. Run `npm install`.
 2. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_SITE_URL`.
-3. Apply `supabase/migrations/001_initial.sql`, then `002_hardening.sql` to your Supabase database using the Supabase SQL editor or CLI.
+3. Apply `supabase/migrations/001_initial.sql`, `002_hardening.sql`, then `003_workflows.sql` to your Supabase database using the Supabase SQL editor or CLI.
 4. In Supabase Auth, enable email sign-in and optionally Google. Add `http://localhost:3000/auth/callback` and the corresponding production callback URL to the redirect allowlist. Set `NEXT_PUBLIC_SITE_URL` to the exact app origin.
 5. Run `npm run dev` and open `http://localhost:3000`.
 
@@ -26,9 +26,9 @@ If npm packages cannot be downloaded, run `npm run preview:static` for a depende
 
 Public: `/`, `/explore`, `/projects/[slug]`, `/how-it-works`, `/pricing`, `/login`, `/signup`.
 
-Signed in: `/dashboard`, `/dashboard/projects`, `/dashboard/projects/new`, `/dashboard/projects/[id]`, `/dashboard/applications`, `/dashboard/feedback`, `/dashboard/analytics`, `/dashboard/profile`, `/dashboard/settings`.
+Signed in: `/dashboard`, `/dashboard/projects`, `/dashboard/projects/new`, `/dashboard/projects/[id]`, `/dashboard/applications`, `/dashboard/feedback`, `/dashboard/analytics`, `/dashboard/notifications`, `/dashboard/profile`, `/dashboard/settings`.
 
-Admin: `/admin`, `/admin/projects`, `/admin/users`, `/admin/reports`.
+Admin: `/admin`, `/admin/projects`, `/admin/users`, `/admin/reports`, `/admin/audit`.
 
 One account can both publish projects and test other projects. Admin access is determined by `public.users.is_admin`; grant it manually to a trusted account in the Supabase SQL editor after signup. Never expose the service role key in Next.js public environment variables.
 
@@ -42,7 +42,7 @@ One account can both publish projects and test other projects. Admin access is d
 
 ## Validation
 
-Run `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` after installing dependencies. The database test checks both migrations, recruitment capacity, private row visibility, selected tester feedback, and paused campaign behavior. Test the following browser flows with separate maker, tester, and admin accounts:
+Run `npm run build:static`, `npm run test:static`, `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` after installing dependencies. The database test checks all three migrations, recruitment capacity, private row visibility, required feedback questions, notifications, selected tester feedback, and paused campaign behavior. Test the following browser flows with separate maker, tester, and admin accounts:
 
 1. Maker draft → submit review → admin approval → public Explore.
 2. Tester application → maker approval → tester feedback → maker analytics.
@@ -51,8 +51,8 @@ Run `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` after i
 
 ## Deployment
 
-For the future server-backed Next.js app, deploy the repository to a platform that supports Next.js server actions, such as Vercel. Configure the same three environment variables for production, with `NEXT_PUBLIC_SITE_URL` set to the production origin. Apply both migrations to the production Supabase project and allowlist `https://<your-domain>/auth/callback` in Supabase Auth. Configure Google credentials in Supabase only if Google login is desired. Confirm the database and storage policies before accepting users.
+For the future server-backed Next.js app, deploy the repository to a platform that supports Next.js server actions, such as Vercel. Configure the same three environment variables for production, with `NEXT_PUBLIC_SITE_URL` set to the production origin. Apply all three migrations to the production Supabase project and allowlist `https://<your-domain>/auth/callback` in Supabase Auth. Configure Google credentials in Supabase only if Google login is desired. Confirm the database and storage policies before accepting users.
 
 ## Current scope
 
-The UI and server actions cover the core marketplace, project, application, feedback, and moderation workflow. Future work includes custom feedback question editing and rendering, richer tester recommendations, popularity sorting, email notifications, dedicated audit log browsing, test automation, and a full production security review. No live Supabase or Vercel deployment is included in this source tree.
+The static deployment supports browsing the landing page, trying the demo login, and creating/editing local demo projects. Its applications, feedback, and analytics surfaces show honest empty states. The Next.js source includes the marketplace, project, application, custom feedback question, notification, analytics, and moderation workflows. Real login, shared project data, tester participation, and admin actions are pending Supabase configuration and a server-capable deployment. Email delivery, end-to-end browser tests, and a full production security review remain. No live Supabase or Next.js deployment is included in this source tree.
