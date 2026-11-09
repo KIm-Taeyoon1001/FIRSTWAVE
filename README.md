@@ -6,7 +6,7 @@ FIRSTWAVE is a desktop-first beta testing marketplace for makers and testers. Th
 
 The deployable static marketing site is committed in `site/`. In Cloudflare Pages, connect this GitHub repository, select the **None** framework preset, leave the build command empty, and set the build output directory to `site`. No environment variables or server runtime are needed for this static site. To regenerate it after editing the source, run `npm run build:static` and commit the updated `site/` files.
 
-The `site/` deployment includes a developer introduction at `/developers/` and an interactive **local demo** at `/login/` and `/dashboard/`. Use `demo@firstwave.app` / `Firstwave123!` to enter. This is a public preview credential, not a real account. Demo projects are stored only in the current browser's `localStorage`; the login flag is stored in `sessionStorage`. Anyone can inspect the credential and local data. Do not enter private information in the demo. Real authentication, applications, moderation, feedback, and shared data require the Next.js app and Supabase setup below.
+The `site/` deployment includes Explore, How It Works, Pricing, a developer introduction at `/developers/`, and an interactive **local demo** at `/login/` and `/dashboard/`. Use `demo@firstwave.app` / `Firstwave123!` to enter. This is a public preview credential, not a real account. Demo projects are stored only in the current browser's `localStorage`; the login flag is stored in `sessionStorage`. Anyone can inspect the credential and local data. Do not enter private information in the demo. Real authentication, applications, moderation, feedback, and shared data require the Next.js app and Supabase setup below.
 
 ## Local development
 
@@ -20,7 +20,7 @@ Requirements: Node.js 20.9 or newer, npm, and a Supabase project.
 
 The public pages render with an empty marketplace before Supabase is configured. Authenticated routes need the environment variables and applied migrations.
 
-If npm packages cannot be downloaded, run `npm run preview:static` for the dependency-free static site at `http://127.0.0.1:3000`. It serves the landing page, developer page, demo login, and local dashboard. It does not run the server-backed marketplace or real authentication.
+If npm packages cannot be downloaded, run `npm run preview:static` for the dependency-free static site at `http://127.0.0.1:3000`. It serves all public information pages, demo login, and the local dashboard. It does not run the server-backed marketplace or real authentication.
 
 ## Routes
 
