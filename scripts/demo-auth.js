@@ -1,4 +1,5 @@
 const demoSessionKey = 'firstwave-demo-session';
+if (!window.FIRSTWAVE_BROWSER_AUTH?.configured) {
 let demoSignedIn = false;
 try { demoSignedIn = sessionStorage.getItem(demoSessionKey) === 'active'; } catch { /* Check browser storage below. */ }
 try { demoSignedIn ||= localStorage.getItem(demoSessionKey) === 'active'; } catch { /* A tab session may still be active. */ }
@@ -28,4 +29,5 @@ if (demoSignedIn) {
       window.location.assign('/');
     }));
   }
+}
 }

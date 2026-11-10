@@ -1,10 +1,11 @@
 const SESSION_KEY = 'firstwave-demo-session';
-const PROJECTS_KEY = 'firstwave-demo-projects';
+let PROJECTS_KEY = 'firstwave-demo-projects';
 const email = 'demo@firstwave.app';
 const password = 'Firstwave123!';
 const login = document.getElementById('demo-login');
+const liveAuth = window.FIRSTWAVE_BROWSER_AUTH?.configured === true;
 
-if (login) login.addEventListener('submit', event => {
+if (login && !liveAuth) login.addEventListener('submit', event => {
   event.preventDefault();
   const enteredEmail = document.getElementById('demo-email').value.trim().toLowerCase();
   const enteredPassword = document.getElementById('demo-password').value;
@@ -27,11 +28,25 @@ if (login) login.addEventListener('submit', event => {
 
 const viewRoot = document.getElementById('demo-view');
 if (viewRoot) {
-  let active = false;
-  try { active = sessionStorage.getItem(SESSION_KEY) === 'active'; } catch { /* Check browser storage below. */ }
-  try { active ||= localStorage.getItem(SESSION_KEY) === 'active'; } catch { /* A tab session may still be active. */ }
-  if (!active) window.location.replace('/login/');
-  else startDashboard();
+  if (liveAuth) {
+    window.FIRSTWAVE_BROWSER_AUTH.currentUser().then(user => {
+      if (!user) { window.location.replace('/login/'); return; }
+      PROJECTS_KEY = `firstwave-preview-projects-${user.id}`;
+      const emailLabel = document.querySelector('.demo-account-email');
+      if (emailLabel) emailLabel.textContent = user.email || 'Signed in';
+      const status = document.querySelector('.demo-account .demo-auth-status');
+      if (status) status.textContent = 'Signed in';
+      const mode = document.querySelector('.demo-side-bottom .demo-mode');
+      if (mode) mode.textContent = 'LOCAL PROJECT PREVIEW';
+      startDashboard();
+    }).catch(error => { viewRoot.textContent = error?.message || 'Authentication could not be checked. Refresh to try again.'; });
+  } else {
+    let active = false;
+    try { active = sessionStorage.getItem(SESSION_KEY) === 'active'; } catch { /* Check browser storage below. */ }
+    try { active ||= localStorage.getItem(SESSION_KEY) === 'active'; } catch { /* A tab session may still be active. */ }
+    if (!active) window.location.replace('/login/');
+    else startDashboard();
+  }
 }
 
 function startDashboard() {
@@ -88,7 +103,13 @@ function startDashboard() {
   }
   nav.forEach(button => button.addEventListener('click', () => { view = button.dataset.view; editId = null; render(); }));
   newButton.addEventListener('click', () => { editId = null; view = 'editor'; render(); });
-  document.getElementById('demo-logout').addEventListener('click', () => { try { sessionStorage.removeItem(SESSION_KEY); } catch {} try { localStorage.removeItem(SESSION_KEY); } catch {} window.location.assign('/login/'); });
+  document.getElementById('demo-logout').addEventListener('click', async () => {
+    if (liveAuth) {
+      try { const client = await window.FIRSTWAVE_BROWSER_AUTH.getClient(); const { error } = await client.auth.signOut(); if (error) throw error; }
+      catch (error) { window.alert(error.message); return; }
+    } else { try { sessionStorage.removeItem(SESSION_KEY); } catch {} try { localStorage.removeItem(SESSION_KEY); } catch {} }
+    window.location.assign('/login/');
+  });
   viewRoot.addEventListener('click', event => {
     const button = event.target.closest('[data-action]'); if (!button) return;
     const id = button.dataset.id, action = button.dataset.action;

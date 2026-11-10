@@ -7,6 +7,20 @@ import { buildPublicPages } from './public-pages.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const output = resolve(root, 'site');
+const localEnv = await readFile(resolve(root, '.env.local'), 'utf8').catch(() => '');
+function publicEnv(name) {
+  const direct = process.env[name];
+  if (direct) return direct.trim();
+  const line = localEnv.split(/\r?\n/).find(item => item.startsWith(`${name}=`));
+  return line ? line.slice(name.length + 1).trim().replace(/^(["'])(.*)\1$/, '$2') : '';
+}
+const supabaseUrl = publicEnv('NEXT_PUBLIC_SUPABASE_URL') || 'https://xxytpyxnxaiwgzglsyel.supabase.co';
+const publishableKey = publicEnv('NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY') || publicEnv('NEXT_PUBLIC_SUPABASE_ANON_KEY');
+if (publishableKey) {
+  let legacyRole = '';
+  try { legacyRole = JSON.parse(Buffer.from(publishableKey.split('.')[1], 'base64url').toString()).role; } catch { /* Publishable keys are opaque. */ }
+  if (!publishableKey.startsWith('sb_publishable_') && legacyRole !== 'anon') throw new Error('Only a Supabase publishable or legacy anon key may be written to the static site');
+}
 let page = html
   .replace('<title>FIRSTWAVE — Local design preview</title>', '<title>FIRSTWAVE — Where Great Apps Meet Their Users</title>')
   .replace(/<div class="preview-banner">[\s\S]*?<\/div>\s*/, '')
@@ -48,12 +62,36 @@ await mkdir(output, { recursive: true });
 await writeFile(resolve(output, 'index.html'), page, 'utf8');
 await buildDemoPages(root, output, page);
 await buildPublicPages(output, page);
-for (const route of ['index.html','explore/index.html','how-it-works/index.html','developers/index.html','pricing/index.html','login/index.html','signup/index.html','dashboard/index.html']) {
+const authMessage = '<p id="auth-message" class="demo-error" role="status" aria-live="polite" hidden></p>';
+const googleButton = '<button id="google-login" class="button light auth-google" type="button" hidden>Continue with Google</button>';
+const liveLogin = `<form id="live-login" class="form-stack auth-fields" hidden><label>Email address<input class="field" name="email" type="email" autocomplete="username" required></label><label>Password<input class="field" name="password" type="password" autocomplete="current-password" required></label>${authMessage}<button class="button">Log in</button></form>${googleButton}<p id="forgot-link" class="auth-switch" hidden><a class="small-link" href="/forgot-password/">Forgot password?</a></p>`;
+const liveSignup = `<form id="live-signup" class="form-stack auth-fields" hidden><label>Full name<input class="field" name="full_name" autocomplete="name" minlength="2" required></label><label>Email address<input class="field" name="email" type="email" autocomplete="email" required></label><label>Password<input class="field" name="password" type="password" autocomplete="new-password" minlength="8" required></label>${authMessage}<button class="button">Create account</button></form>${googleButton}`;
+for (const [route, insertion, marker] of [
+  ['login/index.html', liveLogin, '<form id="demo-login"'],
+  ['signup/index.html', liveSignup, '<div class="form-stack auth-fields">'],
+]) {
+  const target = resolve(output, route);
+  let markup = await readFile(target, 'utf8');
+  if (!markup.includes(marker)) throw new Error(`Missing auth form in ${route}`);
+  markup = markup.replace(marker, `${insertion}${route.startsWith('signup') ? '<div id="signup-preview" class="form-stack auth-fields">' : marker}`);
+  if (route.startsWith('login')) markup = markup.replace('<div class="demo-credentials">', '<div id="demo-credentials" class="demo-credentials">');
+  if (route.startsWith('signup')) markup = markup.replace('<div id="signup-preview" class="form-stack auth-fields"><label', '<div id="signup-preview" class="form-stack auth-fields"><label');
+  markup = markup.replace('<div class="demo-notice">', '<div id="demo-notice" class="demo-notice">');
+  await writeFile(target, markup, 'utf8');
+}
+const authPage = (title, form) => `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>${title} · FIRSTWAVE</title><link rel="icon" href="/favicon.svg"><link rel="stylesheet" href="/marketing.css"><link rel="stylesheet" href="/demo.css"></head><body><header class="demo-header"><div class="container site-header"><a class="brand" href="/">FIRSTWAVE</a><nav class="demo-header-links"><a href="/">Home</a><a href="/login/">Log In</a></nav></div></header><main class="auth-page"><section class="auth-card auth-standalone"><span class="eyebrow">ACCOUNT ACCESS</span><h1>${title}</h1><p>Secure your FIRSTWAVE account.</p><div class="demo-notice" id="unconfigured-message">Account recovery is available when Supabase authentication is connected.</div>${form}${authMessage}<p class="auth-switch"><a href="/login/">Back to log in</a></p></section></main></body></html>`;
+for (const [route, title, form] of [
+  ['forgot-password', 'Reset your password', '<form id="recover-form" class="form-stack auth-fields"><label>Email address<input class="field" name="email" type="email" autocomplete="email" required></label><button class="button">Send reset link</button></form>'],
+  ['reset-password', 'Choose a new password', '<form id="reset-form" class="form-stack auth-fields"><label>New password<input class="field" name="password" type="password" autocomplete="new-password" minlength="8" required></label><button class="button">Update password</button></form>'],
+]) { await mkdir(resolve(output, route), { recursive: true }); await writeFile(resolve(output, route, 'index.html'), authPage(title, form), 'utf8'); }
+for (const route of ['index.html','explore/index.html','how-it-works/index.html','developers/index.html','pricing/index.html','login/index.html','signup/index.html','dashboard/index.html','forgot-password/index.html','reset-password/index.html']) {
   const target = resolve(output, route);
   const markup = await readFile(target, 'utf8');
   if (!markup.includes('</body>')) throw new Error(`Missing document body in ${route}`);
-  await writeFile(target, markup.replace('</body>', '<script src="/demo-auth.js"></script></body>'), 'utf8');
+  await writeFile(target, markup.replace('</body>', '<script src="/auth-config.js"></script><script src="/browser-auth.js"></script><script src="/demo-auth.js"></script></body>'), 'utf8');
 }
+await writeFile(resolve(output, 'auth-config.js'), `window.FIRSTWAVE_AUTH_CONFIG = Object.freeze(${JSON.stringify({ url: supabaseUrl, publishableKey })});\n`, 'utf8');
+await writeFile(resolve(output, 'browser-auth.js'), await readFile(resolve(root, 'scripts/browser-auth.js')), 'utf8');
 await writeFile(resolve(output, 'demo-auth.js'), await readFile(resolve(root, 'scripts/demo-auth.js')), 'utf8');
 await writeFile(resolve(output, 'marketing.css'), await readFile(resolve(root, 'scripts/marketing.css')), 'utf8');
 await writeFile(resolve(output, 'favicon.svg'), await readFile(resolve(root, 'src/app/icon.svg')), 'utf8');

@@ -4,9 +4,17 @@ FIRSTWAVE is a desktop-first beta testing marketplace for makers and testers. Th
 
 ## Cloudflare Pages static deployment
 
-The deployable static marketing site is committed in `site/`. In Cloudflare Pages, connect this GitHub repository, select the **None** framework preset, leave the build command empty, and set the build output directory to `site`. No environment variables or server runtime are needed for this static site. To regenerate it after editing the source, run `npm run build:static` and commit the updated `site/` files.
+The deployable static site is committed in `site/`. In Cloudflare Pages, connect this GitHub repository, select the **None** framework preset, leave the build command empty, and set the build output directory to `site`. To regenerate it after editing the source, run `npm run build:static` and commit the updated `site/` files. Pages serves these committed files; adding a Pages environment variable alone does not update them with the build command blank.
 
-The `site/` deployment includes Explore, How It Works, Pricing, a developer introduction at `/developers/`, and an interactive **local demo** at `/login/` and `/dashboard/`. Use `demo@firstwave.app` / `Firstwave123!` to enter. This is a public preview credential, not a real account. Demo projects and the demo login flag are stored only in the current browser's `localStorage`; the login flag is also kept in `sessionStorage` for older tabs. Anyone can inspect the credential and local data. Do not enter private information in the demo. Real authentication, applications, moderation, feedback, and shared data require the Next.js app and Supabase setup below.
+The `site/` deployment includes Explore, How It Works, Pricing, a developer introduction at `/developers/`, and an interactive workspace. With no Supabase public key configured, `/login/` and `/dashboard/` use a **local demo**. Use `demo@firstwave.app` / `Firstwave123!` to enter. This is a public preview credential, not a real account. Demo projects and the demo login flag are stored only in the current browser. Do not enter private information in the demo.
+
+To enable real email login, registration, Google sign-in, and password recovery on the static Pages deployment:
+
+1. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in local `.env.local` or the build environment. A legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` also works. Use **only** a publishable or anon key. The builder rejects other key types. Public keys are embedded in `site/auth-config.js`; they are visible to every visitor.
+2. In Supabase Auth, enable email sign-in. Set the Site URL to the deployed Pages origin. Add `https://<your-pages-domain>/dashboard/` and `https://<your-pages-domain>/reset-password/` to the Auth redirect allowlist. For local static testing, also allowlist `http://127.0.0.1:3000/dashboard/` and `http://127.0.0.1:3000/reset-password/`. Configure the Google provider in Supabase if Google login is desired.
+3. Run `npm run build:static` and commit the updated `site/` files. Push to the connected GitHub branch. Then test signup, email confirmation, login, Home navigation, logout, and password recovery on the deployed domain.
+
+Real authentication on Pages identifies the user, but its workspace projects are still a **local preview** stored separately for each account in that browser. Shared projects, applications, moderation, feedback, and server-side authorization require deploying the Next.js app with its Supabase migrations.
 
 ## Local development
 
@@ -20,7 +28,7 @@ Requirements: Node.js 20.9 or newer, npm, and a Supabase project.
 
 The public pages render with an empty marketplace before Supabase is configured. Authenticated routes need the environment variables and applied migrations.
 
-If npm packages cannot be downloaded, run `npm run preview:static` for the dependency-free static site at `http://127.0.0.1:3000`. It serves all public information pages, demo login, and the local dashboard. It does not run the server-backed marketplace or real authentication.
+If npm packages cannot be downloaded, run `npm run preview:static` for the dependency-free static site at `http://127.0.0.1:3000`. It serves the public pages and local dashboard. With a Supabase public key, the static site uses browser authentication; without one, it uses the local demo. It does not run the server-backed marketplace.
 
 ## Routes
 
@@ -52,8 +60,8 @@ Run `npm run build:static`, `npm run test:static`, `npm test`, `npm run typechec
 
 ## Deployment
 
-To run real authentication and the shared marketplace, deploy the Next.js app to a platform that supports its server actions, such as Vercel. The existing Cloudflare Pages `site/` deployment remains a static demo and does not run this Next.js code. Configure the same three environment variables for production, with `NEXT_PUBLIC_SITE_URL` set to the production origin. Apply all five migrations to the production Supabase project and allowlist `https://<your-domain>/auth/callback` plus its password reset variant in Supabase Auth. Configure Google credentials in Supabase only if Google login is desired. Confirm the database and storage policies before accepting users.
+To run the shared marketplace, deploy the Next.js app to a platform that supports its server actions, such as Vercel. The Cloudflare Pages `site/` deployment can run Supabase browser authentication but does not run the Next.js API or server actions. Configure the same three environment variables for production, with `NEXT_PUBLIC_SITE_URL` set to the production origin. Apply all five migrations to the production Supabase project and allowlist `https://<your-domain>/auth/callback` plus its password reset variant in Supabase Auth. Configure Google credentials in Supabase only if Google login is desired. Confirm the database and storage policies before accepting users.
 
 ## Current scope
 
-The static deployment supports browsing the landing page, trying the demo login, and creating/editing local demo projects. Its applications, feedback, and analytics surfaces show honest empty states. The Next.js source includes the marketplace, project, application, custom feedback question, notification, analytics, and moderation workflows. Real login, shared project data, tester participation, and admin actions are pending Supabase configuration and a server-capable deployment. Email delivery, end-to-end browser tests, and a full production security review remain. No live Supabase or Next.js deployment is included in this source tree.
+The static deployment supports public pages, Supabase browser authentication when configured, and creating/editing local preview projects. Its applications, feedback, and analytics surfaces show honest empty states. The Next.js source includes the marketplace, project, application, custom feedback question, notification, analytics, and moderation workflows. Shared project data, tester participation, and admin actions are pending Supabase configuration and a server-capable deployment. Live auth verification, email delivery, end-to-end browser tests, and a full production security review remain. No live Supabase or Next.js deployment is included in this source tree.
