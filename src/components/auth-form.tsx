@@ -19,6 +19,7 @@ export function AuthForm({ mode, message }: { mode: 'login' | 'signup'; message?
         {signup && <label>Full name<input className="field" name="name" placeholder="Your name" required minLength={2} maxLength={80} autoComplete="name" disabled={!configured}/></label>}
         <label>Email address<input className="field" type="email" name="email" placeholder="you@example.com" required autoComplete="email" disabled={!configured}/></label>
         <label>Password<input className="field" type="password" name="password" placeholder={signup ? 'At least 8 characters' : 'Enter your password'} required minLength={signup ? 8 : undefined} autoComplete={signup ? 'new-password' : 'current-password'} disabled={!configured}/></label>
+        {!signup && <Link className="small-link" href="/forgot-password" style={{justifySelf:'end'}}>Forgot password?</Link>}
         {signup && <p className="auth-note"><Check size={14}/> Use one account as both a maker and a tester.</p>}
         <button className="button" disabled={!configured}>{signup ? 'Create account' : 'Log in'}<ArrowRight size={16}/></button>
       </form>

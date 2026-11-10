@@ -6,6 +6,11 @@ import { db, currentUser } from './supabase';
 
 function value(form: FormData, key: string) { return String(form.get(key) || '').trim(); }
 function go(path: string, message: string): never { redirect(`${path}?message=${encodeURIComponent(message)}`); }
+function callbackUrl(next = '/dashboard') {
+  const url = new URL('/auth/callback', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+  if (next !== '/dashboard') url.searchParams.set('next', next);
+  return url.toString();
+}
 async function requireSession() {
   const client = await db();
   const user = await currentUser();
@@ -24,30 +29,58 @@ const projectSchema = z.object({
 export async function signIn(form: FormData) {
   const client = await db();
   if (!client) go('/login', 'Supabase is not configured');
-  const { error } = await client.auth.signInWithPassword({ email: value(form, 'email'), password: value(form, 'password') });
+  const email = value(form, 'email');
+  const password = String(form.get('password') ?? '');
+  if (!z.string().email().safeParse(email).success || !password) go('/login', 'Enter a valid email and password');
+  const { data, error } = await client.auth.signInWithPassword({ email, password });
   if (error) go('/login', error.message);
+  if (data.user) {
+    const { data: account } = await client.from('users').select('is_suspended').eq('id', data.user.id).maybeSingle();
+    if (account?.is_suspended) {
+      await client.auth.signOut({ scope: 'local' });
+      go('/login', 'This account is unavailable');
+    }
+  }
   redirect('/dashboard');
 }
 export async function signUp(form: FormData) {
   const client = await db();
   if (!client) go('/signup', 'Supabase is not configured');
-  const parsed = z.object({ email: z.string().email(), password: z.string().min(8), name: z.string().min(2) }).safeParse({ email: value(form,'email'), password: value(form,'password'), name: value(form,'name') });
+  const parsed = z.object({ email: z.string().email(), password: z.string().min(8), name: z.string().min(2) }).safeParse({ email: value(form,'email'), password: String(form.get('password') ?? ''), name: value(form,'name') });
   if (!parsed.success) go('/signup', 'Enter a name, valid email and password of at least 8 characters');
-  const { error } = await client.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { data: { full_name: parsed.data.name } } });
+  const { data, error } = await client.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { data: { full_name: parsed.data.name }, emailRedirectTo: callbackUrl() } });
   if (error) go('/signup', error.message);
+  if (data.session) redirect('/dashboard');
   redirect('/login?message=Check+your+email+to+confirm+your+account');
 }
 export async function googleSignIn() {
   const client = await db();
   if (!client) go('/login', 'Supabase is not configured');
-  const { data, error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/auth/callback` } });
+  const { data, error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: callbackUrl() } });
   if (error || !data.url) go('/login', error?.message || 'Google sign in is unavailable');
   redirect(data.url);
 }
 export async function signOut() {
   const client = await db();
-  await client?.auth.signOut();
+  await client?.auth.signOut({ scope: 'local' });
   redirect('/');
+}
+export async function requestPasswordReset(form: FormData) {
+  const client = await db();
+  if (!client) go('/forgot-password', 'Supabase is not configured');
+  const email = value(form, 'email');
+  if (!z.string().email().safeParse(email).success) go('/forgot-password', 'Enter a valid email address');
+  const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: callbackUrl('/reset-password') });
+  if (error) go('/forgot-password', error.message);
+  go('/forgot-password', 'If an account exists, a password reset email is on its way');
+}
+export async function updatePassword(form: FormData) {
+  const { client } = await requireSession();
+  const password = String(form.get('password') ?? '');
+  if (password.length < 8 || password !== String(form.get('confirm_password') ?? '')) go('/reset-password', 'Use at least 8 characters and matching passwords');
+  const { error } = await client.auth.updateUser({ password });
+  if (error) go('/reset-password', error.message);
+  go('/dashboard/settings', 'Password updated');
 }
 export async function saveProfile(form: FormData) {
   const { client, user } = await requireSession();

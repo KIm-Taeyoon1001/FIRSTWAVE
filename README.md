@@ -13,9 +13,9 @@ The `site/` deployment includes Explore, How It Works, Pricing, a developer intr
 Requirements: Node.js 20.9 or newer, npm, and a Supabase project.
 
 1. Run `npm install`.
-2. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and `NEXT_PUBLIC_SITE_URL`.
+2. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_SITE_URL`. The project URL for the supplied Supabase project is `https://xxytpyxnxaiwgzglsyel.supabase.co`. The publishable key is available in the project's **Connect** dialog. A legacy anon key also works via `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Never use the service role key in either public variable.
 3. Apply `supabase/migrations/001_initial.sql`, `002_hardening.sql`, `003_workflows.sql`, then `004_integrity.sql` to your Supabase database using the Supabase SQL editor or CLI.
-4. In Supabase Auth, enable email sign-in and optionally Google. Add `http://localhost:3000/auth/callback` and the corresponding production callback URL to the redirect allowlist. Set `NEXT_PUBLIC_SITE_URL` to the exact app origin.
+4. In Supabase Auth, enable email sign-in and optionally Google. Add `http://localhost:3000/auth/callback`, `http://localhost:3000/auth/callback?next=/reset-password`, and the corresponding production callback URLs to the redirect allowlist. Set `NEXT_PUBLIC_SITE_URL` to the exact app origin. The default confirmation email can use the PKCE `code` response; the callback also accepts `token_hash` links with `type=email` or `type=recovery` if you customize email templates. Password reset redirects to `/auth/callback?next=/reset-password`.
 5. Run `npm run dev` and open `http://localhost:3000`.
 
 The public pages render with an empty marketplace before Supabase is configured. Authenticated routes need the environment variables and applied migrations.
@@ -24,7 +24,7 @@ If npm packages cannot be downloaded, run `npm run preview:static` for the depen
 
 ## Routes
 
-Public: `/`, `/developers`, `/explore`, `/projects/[slug]`, `/how-it-works`, `/pricing`, `/login`, `/signup`.
+Public: `/`, `/developers`, `/explore`, `/projects/[slug]`, `/how-it-works`, `/pricing`, `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/suspended`.
 
 Signed in: `/dashboard`, `/dashboard/projects`, `/dashboard/projects/new`, `/dashboard/projects/[id]`, `/dashboard/applications`, `/dashboard/feedback`, `/dashboard/analytics`, `/dashboard/notifications`, `/dashboard/profile`, `/dashboard/settings`.
 
@@ -52,7 +52,7 @@ Run `npm run build:static`, `npm run test:static`, `npm test`, `npm run typechec
 
 ## Deployment
 
-For the future server-backed Next.js app, deploy the repository to a platform that supports Next.js server actions, such as Vercel. Configure the same three environment variables for production, with `NEXT_PUBLIC_SITE_URL` set to the production origin. Apply all four migrations to the production Supabase project and allowlist `https://<your-domain>/auth/callback` in Supabase Auth. Configure Google credentials in Supabase only if Google login is desired. Confirm the database and storage policies before accepting users.
+To run real authentication and the shared marketplace, deploy the Next.js app to a platform that supports its server actions, such as Vercel. The existing Cloudflare Pages `site/` deployment remains a static demo and does not run this Next.js code. Configure the same three environment variables for production, with `NEXT_PUBLIC_SITE_URL` set to the production origin. Apply all four migrations to the production Supabase project and allowlist `https://<your-domain>/auth/callback` plus its password reset variant in Supabase Auth. Configure Google credentials in Supabase only if Google login is desired. Confirm the database and storage policies before accepting users.
 
 ## Current scope
 

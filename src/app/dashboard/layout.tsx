@@ -22,8 +22,9 @@ export default async function DashboardLayout({children}:{children:React.ReactNo
   const client = await db();
   const [{count: unread}, {data: account}] = await Promise.all([
     client!.from('notifications').select('*',{count:'exact',head:true}).eq('user_id',user.id).is('read_at',null),
-    client!.from('users').select('is_admin').eq('id',user.id).single()
+    client!.from('users').select('is_admin,is_suspended').eq('id',user.id).single()
   ]);
+  if (account?.is_suspended) redirect('/suspended');
   return <div className="dash">
     <aside className="dash-side"><Brand/><nav aria-label="Dashboard navigation">
       {nav.map(([label,href,Icon]) => <Link key={href} href={href}><Icon size={16}/>{label}</Link>)}
