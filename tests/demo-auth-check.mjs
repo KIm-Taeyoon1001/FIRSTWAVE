@@ -3,8 +3,9 @@ import { runInNewContext } from 'node:vm';
 
 const code = await readFile(new URL('../site/demo-auth.js', import.meta.url), 'utf8');
 
-function visit(path, signedIn) {
+function visit(path, signedIn, browserSignedIn = signedIn) {
   const session = new Map(signedIn ? [['firstwave-demo-session', 'active']] : []);
+  const browser = new Map(browserSignedIn ? [['firstwave-demo-session', 'active']] : []);
   const guestLinks = [{ removed: false, remove() { this.removed = true; } }];
   const actions = { markup: '', querySelectorAll: () => guestLinks, insertAdjacentHTML: (_, html) => { actions.markup = html; } };
   const mobile = { markup: '', querySelectorAll: () => guestLinks, insertAdjacentHTML: (_, html) => { mobile.markup = html; } };
@@ -14,10 +15,11 @@ function visit(path, signedIn) {
   const buttons = [{ addEventListener: (_, handler) => { signOut = handler; } }];
   runInNewContext(code, {
     sessionStorage: { getItem: key => session.get(key) ?? null, removeItem: key => session.delete(key) },
+    localStorage: { getItem: key => browser.get(key) ?? null, removeItem: key => browser.delete(key) },
     document: { querySelector: () => header, querySelectorAll: selector => selector === '[data-demo-signout]' ? buttons : [cta] },
     window: { location: { pathname: path, assign: value => { destination = value; }, replace: value => { destination = value; } } },
   });
-  return { session, guestLinks, actions, mobile, cta, signOut, destination: () => destination };
+  return { session, browser, guestLinks, actions, mobile, cta, signOut, destination: () => destination };
 }
 
 const guest = visit('/explore/', false);
@@ -26,6 +28,8 @@ const active = visit('/explore/', true);
 if (!active.guestLinks[0].removed || !active.actions.markup.includes('Demo signed in') || !active.actions.markup.includes('/dashboard/')) throw new Error('Signed-in header was not shown');
 if (!active.mobile.markup.includes('Demo signed in') || active.cta.href !== '/dashboard/') throw new Error('Signed-in mobile navigation or CTA was not updated');
 active.signOut();
-if (active.session.has('firstwave-demo-session') || active.destination() !== '/') throw new Error('Sign out did not clear the demo session');
+if (active.session.has('firstwave-demo-session') || active.browser.has('firstwave-demo-session') || active.destination() !== '/') throw new Error('Sign out did not clear the demo session');
+const freshTab = visit('/', false, true);
+if (!freshTab.actions.markup.includes('Demo signed in')) throw new Error('Home lost the browser login state in a new tab');
 if (visit('/login/', true).destination() !== '/dashboard/') throw new Error('Signed-in user was left on the login page');
-console.log('Demo auth navigation OK: guest, signed in, mobile, sign out and login redirect');
+console.log('Demo auth navigation OK: guest, signed in, Home, mobile, sign out and login redirect');

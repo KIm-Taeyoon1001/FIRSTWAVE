@@ -14,13 +14,23 @@ if (login) login.addEventListener('submit', event => {
     error.hidden = false;
     return;
   }
-  sessionStorage.setItem(SESSION_KEY, 'active');
+  let stored = false;
+  try { sessionStorage.setItem(SESSION_KEY, 'active'); stored = true; } catch { /* Try browser storage below. */ }
+  try { localStorage.setItem(SESSION_KEY, 'active'); stored = true; } catch { /* The tab session can still work. */ }
+  if (!stored) {
+    error.textContent = 'Enable browser storage to use this local preview.';
+    error.hidden = false;
+    return;
+  }
   window.location.assign('/dashboard/');
 });
 
 const viewRoot = document.getElementById('demo-view');
 if (viewRoot) {
-  if (sessionStorage.getItem(SESSION_KEY) !== 'active') window.location.replace('/login/');
+  let active = false;
+  try { active = sessionStorage.getItem(SESSION_KEY) === 'active'; } catch { /* Check browser storage below. */ }
+  try { active ||= localStorage.getItem(SESSION_KEY) === 'active'; } catch { /* A tab session may still be active. */ }
+  if (!active) window.location.replace('/login/');
   else startDashboard();
 }
 
@@ -78,7 +88,7 @@ function startDashboard() {
   }
   nav.forEach(button => button.addEventListener('click', () => { view = button.dataset.view; editId = null; render(); }));
   newButton.addEventListener('click', () => { editId = null; view = 'editor'; render(); });
-  document.getElementById('demo-logout').addEventListener('click', () => { sessionStorage.removeItem(SESSION_KEY); window.location.assign('/login/'); });
+  document.getElementById('demo-logout').addEventListener('click', () => { try { sessionStorage.removeItem(SESSION_KEY); } catch {} try { localStorage.removeItem(SESSION_KEY); } catch {} window.location.assign('/login/'); });
   viewRoot.addEventListener('click', event => {
     const button = event.target.closest('[data-action]'); if (!button) return;
     const id = button.dataset.id, action = button.dataset.action;

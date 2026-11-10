@@ -17,13 +17,14 @@ let destination = '';
 runInNewContext(code, {
   document: { getElementById: id => loginFields[id] ?? null },
   sessionStorage: storage(session),
+  localStorage: storage(data),
   window: { location: { assign: path => { destination = path; } } },
 });
 submitLogin({ preventDefault() {} });
 if (session.size || loginFields['login-error'].hidden) throw new Error('Invalid demo login was accepted');
 loginFields['demo-password'].value = 'Firstwave123!';
 submitLogin({ preventDefault() {} });
-if (destination !== '/dashboard/' || session.get('firstwave-demo-session') !== 'active') throw new Error('Valid demo login failed');
+if (destination !== '/dashboard/' || session.get('firstwave-demo-session') !== 'active' || data.get('firstwave-demo-session') !== 'active') throw new Error('Valid demo login failed');
 
 let createProject, submitProject, viewClick, viewInput, clearProjects, showProjects;
 const title = { textContent: '' }, description = { textContent: '' }, newButton = { hidden: false, addEventListener: (_, handler) => { createProject = handler; } };
@@ -64,4 +65,12 @@ if (!viewRoot.innerHTML.includes('No matching projects')) throw new Error('Proje
 clearProjects();
 viewClick({ target: { closest: () => ({ dataset: { action: 'clear' } }) } });
 if (data.has('firstwave-demo-projects')) throw new Error('Local project reset failed');
-console.log('Demo flow OK: login, project creation, escaping, review state, search, filters and reset');
+runInNewContext(code, {
+  document: { getElementById: id => elements[id] ?? null, querySelectorAll: () => nav },
+  sessionStorage: storage(new Map()), localStorage: storage(data),
+  window: { confirm: () => true, location: { replace() { throw new Error('Fresh tab lost browser login'); }, assign() {} } },
+  crypto: { randomUUID: () => 'demo-project-1' },
+  FormData: class { constructor() { return formValues; } },
+});
+if (!viewRoot.innerHTML.includes('Total projects')) throw new Error('Browser login did not open the workspace');
+console.log('Demo flow OK: login, cross-tab session, project creation, escaping, review state, search, filters and reset');

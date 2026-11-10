@@ -1,6 +1,7 @@
 const demoSessionKey = 'firstwave-demo-session';
 let demoSignedIn = false;
-try { demoSignedIn = sessionStorage.getItem(demoSessionKey) === 'active'; } catch { /* Storage may be unavailable. */ }
+try { demoSignedIn = sessionStorage.getItem(demoSessionKey) === 'active'; } catch { /* Check browser storage below. */ }
+try { demoSignedIn ||= localStorage.getItem(demoSessionKey) === 'active'; } catch { /* A tab session may still be active. */ }
 
 if (demoSignedIn) {
   const path = window.location.pathname.replace(/\/+$/, '') || '/';
@@ -22,7 +23,8 @@ if (demoSignedIn) {
       link.setAttribute('href', '/dashboard/');
     });
     document.querySelectorAll('[data-demo-signout]').forEach(button => button.addEventListener('click', () => {
-      try { sessionStorage.removeItem(demoSessionKey); } catch { /* Continue to the public page. */ }
+      try { sessionStorage.removeItem(demoSessionKey); } catch {}
+      try { localStorage.removeItem(demoSessionKey); } catch {}
       window.location.assign('/');
     }));
   }
