@@ -17,7 +17,7 @@ export default async function DashboardLayout({children}:{children:React.ReactNo
   if (account?.is_suspended) redirect('/suspended');
   return <div className="dash">
     <header className="dash-global"><div className="dash-global-brand"><Brand/><span className="dash-global-divider"/><span className="dash-workspace-name">Personal workspace</span></div>
-      <div className="dash-global-actions"><Link className="dash-explore" href="/explore"><Compass size={16}/>Explore</Link><Link href="/dashboard/notifications" aria-label={`${unread || 0} unread notifications`}><Bell size={17}/>{unread ? <span className="status">{unread}</span> : null}</Link><span className="dash-account-email">{user.email}</span><form action={signOut}><button aria-label="Sign out" className="dash-signout"><LogOut size={16}/></button></form></div>
+      <div className="dash-global-actions"><Link className="dash-explore" href="/explore"><Compass size={16}/>Explore</Link><Link href="/dashboard/notifications" aria-label={`${unread || 0} unread notifications`}><Bell size={17}/>{unread ? <span className="status">{unread}</span> : null}</Link><span className="auth-status"><span className="auth-status-dot"/>Signed in</span><span className="dash-account-email">{user.email}</span><form action={signOut}><button aria-label="Sign out" className="dash-signout"><LogOut size={16}/></button></form></div>
     </header>
     <aside className="dash-side"><div className="dash-sidebar-title"><span>FIRSTWAVE</span><strong>Workspace</strong></div><DashboardNav isAdmin={Boolean(account?.is_admin)}/></aside>
     <div className="dash-main">

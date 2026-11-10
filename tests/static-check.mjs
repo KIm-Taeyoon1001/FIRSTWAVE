@@ -21,6 +21,7 @@ for (const route of ['/explore/','/how-it-works/','/developers/','/pricing/']) {
 if (!login.includes('id="demo-login"') || !login.includes('Demo mode')) throw new Error('Demo login is missing or mislabeled');
 if (!signup.includes('Registration will open') || !signup.includes('href="/login/"')) throw new Error('Sign up state is unclear');
 if (!dashboard.includes('data-view="projects"') || !dashboard.includes('id="demo-view"')) throw new Error('Developer workspace is missing');
+if (!dashboard.includes('Demo signed in') || dashboard.includes('href="/login/">Log In')) throw new Error('Workspace does not clearly show its signed-in state');
 const dashboardViews = [...dashboard.matchAll(/data-view="([^"]+)"/g)].map(match => match[1]);
 if (dashboardViews.length !== new Set(dashboardViews).size) throw new Error('Developer workspace contains duplicate navigation items');
 if (!developers.includes('Campaign briefs') || !developers.includes('href="/login/"')) throw new Error('Developer page is missing or disconnected');
