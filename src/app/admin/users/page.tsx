@@ -5,7 +5,9 @@ import { ConfirmButton } from '@/components/confirm-button';
 
 export default async function AdminUsers({searchParams}:{searchParams:Promise<{message?:string;q?:string;page?:string}>}) {
   const {message,q,page:rawPage}=await searchParams, client=await db(), current=await currentUser();
-  const page=Math.max(1,Number(rawPage)||1), search=(q||'').trim().replace(/[%_]/g,'').slice(0,100);
+  const requestedPage=Number(rawPage);
+  const page=Number.isSafeInteger(requestedPage)&&requestedPage>0?Math.min(requestedPage,10000):1;
+  const search=(q||'').trim().replace(/[%_]/g,'').slice(0,100);
   let query=client!.from('users').select('id,email,is_admin,is_suspended,created_at',{count:'exact'}).order('created_at',{ascending:false});
   if (search) query=query.ilike('email',`%${search}%`);
   const {data,count}=await query.range((page-1)*25,page*25-1);

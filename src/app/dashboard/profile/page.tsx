@@ -18,7 +18,7 @@ export default async function Profile({searchParams}:{searchParams:Promise<{mess
         <label>Bio<textarea name="bio" maxLength={1000} defaultValue={data?.bio || ''} placeholder="Tell makers what you enjoy building or testing."/></label>
         <label>Devices and platforms<input className="field" name="devices" maxLength={300} defaultValue={data?.devices || ''} placeholder="e.g. Windows 11, Chrome, iPhone"/></label>
         <fieldset style={{border:0,padding:0,margin:0}}><legend style={{fontSize:12,fontWeight:700,marginBottom:10}}>Testing interests</legend>
-          <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{categories.map(category => <label key={category} style={{display:'inline-flex',alignItems:'center',gap:7,padding:'9px 11px',border:'1px solid #dce5df',borderRadius:8,fontSize:12,fontWeight:600}}><input type="checkbox" name="tester_interests" value={category} defaultChecked={interests.has(category)}/>{category}</label>)}</div>
+          <div style={{display:'flex',gap:10,flexWrap:'wrap'}}>{categories.map(category => <label key={category} style={{display:'inline-flex',alignItems:'center',gap:7,padding:'9px 11px',border:'1px solid var(--line)',borderRadius:8,fontSize:12,fontWeight:600}}><input type="checkbox" name="tester_interests" value={category} defaultChecked={interests.has(category)}/>{category}</label>)}</div>
         </fieldset>
         <button className="button" style={{width:'auto',justifySelf:'start'}}>Save profile</button>
       </form>

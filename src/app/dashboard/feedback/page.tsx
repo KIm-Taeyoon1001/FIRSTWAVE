@@ -29,8 +29,8 @@ export default async function Feedback({ searchParams }: { searchParams: Promise
     <div className="panel"><h2>Tests awaiting your feedback</h2>
       {pending.length ? pending.map(assignment => {
         const project = assignment.projects as unknown as ProjectInfo;
-        return <div key={assignment.project_id} style={{borderTop:'1px solid #dce5df',paddingTop:20,marginTop:20}}>
-          <h3>{project?.name || 'Project'}</h3><p style={{fontSize:13,color:'#68776d'}}>{project?.instructions || 'Explore the product and share your experience.'}</p>
+        return <div key={assignment.project_id} style={{borderTop:'1px solid var(--line)',paddingTop:20,marginTop:20}}>
+          <h3>{project?.name || 'Project'}</h3><p style={{fontSize:13,color:'var(--muted)'}}>{project?.instructions || 'Explore the product and share your experience.'}</p>
           <FeedbackForm projectId={assignment.project_id} questions={allQuestions.filter(q => q.project_id === assignment.project_id)}/>
         </div>;
       }) : <div className="empty"><h3>Nothing to submit right now</h3><p>When a maker approves your application, the project will appear here.</p><Link className="button" href="/explore">Find a project</Link></div>}

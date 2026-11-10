@@ -10,8 +10,9 @@ const platforms = ['Web','iOS','Android','Desktop','API'];
 
 export default async function Explore({ searchParams }: { searchParams: Promise<Filters> }) {
   const params = await searchParams;
-  const page = Math.max(1, Number(params.page) || 1);
-  const { projects, count } = await publicProjects({ ...params, page });
+  const requestedPage = Number(params.page);
+  const page = Number.isSafeInteger(requestedPage) && requestedPage > 0 ? Math.min(requestedPage, 10000) : 1;
+  const { projects, count, unavailable } = await publicProjects({ ...params, page });
   const pageUrl = (number: number) => {
     const query = new URLSearchParams();
     for (const key of ['q','category','platform','recruitment','sort'] as const) if (params[key]) query.set(key,params[key]!);
@@ -30,10 +31,10 @@ export default async function Explore({ searchParams }: { searchParams: Promise<
         <select name="sort" aria-label="Sort projects" defaultValue={params.sort || 'newest'}><option value="newest">Newest</option><option value="popular">Most applications</option></select>
         <button className="button"><Search size={15}/>Search</button>
       </form>
-      <p style={{fontSize:12,color:'#68776d',marginBottom:18}}>{count} published {count === 1 ? 'campaign' : 'campaigns'} · {params.sort === 'popular' ? 'Sorted by real application count' : 'Newest first'}</p>
-      {projects.length ? <div className="project-grid">{projects.map(project => <ProjectCard key={project.id} project={project}/>)}</div> :
+      {!unavailable && <p style={{fontSize:12,color:'var(--muted)',marginBottom:18}}>{count} published {count === 1 ? 'campaign' : 'campaigns'} · {params.sort === 'popular' ? 'Sorted by real application count' : 'Newest first'}</p>}
+      {unavailable ? <div className="empty"><Search size={30} style={{margin:'0 auto 12px',color:'#16a36a'}}/><h3>Marketplace unavailable</h3><p>The project connection is not ready. Please try again later.</p></div> : projects.length ? <div className="project-grid">{projects.map(project => <ProjectCard key={project.id} project={project}/>)}</div> :
         <div className="empty"><Search size={30} style={{margin:'0 auto 12px',color:'#16a36a'}}/><h3>No campaigns found</h3><p>Try another keyword or filter. New campaigns appear after approval.</p><Link className="button light" href="/explore">Clear filters</Link></div>}
-      {count > 12 && <div className="pagination">{page > 1 && <Link className="button light" href={pageUrl(page-1)}>Previous</Link>}{page * 12 < count && <Link className="button light" href={pageUrl(page+1)}>Next</Link>}</div>}
+      {!unavailable && count > 12 && <div className="pagination">{page > 1 && <Link className="button light" href={pageUrl(page-1)}>Previous</Link>}{page * 12 < count && <Link className="button light" href={pageUrl(page+1)}>Next</Link>}</div>}
     </main>
     <Footer/>
   </>;
