@@ -48,6 +48,13 @@ await mkdir(output, { recursive: true });
 await writeFile(resolve(output, 'index.html'), page, 'utf8');
 await buildDemoPages(root, output, page);
 await buildPublicPages(output, page);
+for (const route of ['index.html','explore/index.html','how-it-works/index.html','developers/index.html','pricing/index.html','login/index.html','signup/index.html','dashboard/index.html']) {
+  const target = resolve(output, route);
+  const markup = await readFile(target, 'utf8');
+  if (!markup.includes('</body>')) throw new Error(`Missing document body in ${route}`);
+  await writeFile(target, markup.replace('</body>', '<script src="/demo-auth.js"></script></body>'), 'utf8');
+}
+await writeFile(resolve(output, 'demo-auth.js'), await readFile(resolve(root, 'scripts/demo-auth.js')), 'utf8');
 await writeFile(resolve(output, 'marketing.css'), await readFile(resolve(root, 'scripts/marketing.css')), 'utf8');
 await writeFile(resolve(output, 'favicon.svg'), await readFile(resolve(root, 'src/app/icon.svg')), 'utf8');
 await writeFile(resolve(output, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: DENY\n', 'utf8');

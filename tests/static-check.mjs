@@ -29,6 +29,7 @@ if (!demoScript.includes('sessionStorage.setItem') || !demoScript.includes('loca
 if (!headers.startsWith('/*\n')) throw new Error('Security headers do not cover all static routes');
 const output = resolve(dirname(fileURLToPath(import.meta.url)), '../site');
 for (const [name, content] of [['home',page],['login',login],['signup',signup],['dashboard',dashboard],['developers',developers],['explore',explore],['how-it-works',how],['pricing',pricing]]) {
+  if (!content.includes('src="/demo-auth.js"')) throw new Error(`${name} does not update the demo login state`);
   const ids = new Set([...content.matchAll(/id="([^"]+)"/g)].map(match => match[1]));
   const anchors = [...content.matchAll(/href="#([^"]+)"/g)].map(match => match[1]);
   anchorCount += anchors.length;
