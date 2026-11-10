@@ -14,7 +14,7 @@ Requirements: Node.js 20.9 or newer, npm, and a Supabase project.
 
 1. Run `npm install`.
 2. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_SITE_URL`. The project URL for the supplied Supabase project is `https://xxytpyxnxaiwgzglsyel.supabase.co`. The publishable key is available in the project's **Connect** dialog. A legacy anon key also works via `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Never use the service role key in either public variable.
-3. Apply `supabase/migrations/001_initial.sql`, `002_hardening.sql`, `003_workflows.sql`, then `004_integrity.sql` to your Supabase database using the Supabase SQL editor or CLI.
+3. Apply `supabase/migrations/001_initial.sql`, `002_hardening.sql`, `003_workflows.sql`, `004_integrity.sql`, then `005_feedback_answers.sql` to your Supabase database using the Supabase SQL editor or CLI.
 4. In Supabase Auth, enable email sign-in and optionally Google. Add `http://localhost:3000/auth/callback`, `http://localhost:3000/auth/callback?next=/reset-password`, and the corresponding production callback URLs to the redirect allowlist. Set `NEXT_PUBLIC_SITE_URL` to the exact app origin. The default confirmation email can use the PKCE `code` response; the callback also accepts `token_hash` links with `type=email` or `type=recovery` if you customize email templates. Password reset redirects to `/auth/callback?next=/reset-password`.
 5. Run `npm run dev` and open `http://localhost:3000`.
 
@@ -43,7 +43,7 @@ One account can both publish projects and test other projects. Admin access is d
 
 ## Validation
 
-Run `npm run build:static`, `npm run test:static`, `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` after installing dependencies. The database test checks all four migrations, recruitment capacity, private row visibility, moderation field integrity, required feedback questions, notifications, selected tester feedback, and paused campaign behavior. Test the following browser flows with separate maker, tester, and admin accounts:
+Run `npm run build:static`, `npm run test:static`, `npm test`, `npm run typecheck`, `npm run lint`, and `npm run build` after installing dependencies. The database test checks all five migrations, recruitment capacity, private row visibility, moderation field integrity, required feedback questions, answer integrity, notifications, selected tester feedback, and paused campaign behavior. Test the following browser flows with separate maker, tester, and admin accounts:
 
 1. Maker draft → submit review → admin approval → public Explore.
 2. Tester application → maker approval → tester feedback → maker analytics.
@@ -52,7 +52,7 @@ Run `npm run build:static`, `npm run test:static`, `npm test`, `npm run typechec
 
 ## Deployment
 
-To run real authentication and the shared marketplace, deploy the Next.js app to a platform that supports its server actions, such as Vercel. The existing Cloudflare Pages `site/` deployment remains a static demo and does not run this Next.js code. Configure the same three environment variables for production, with `NEXT_PUBLIC_SITE_URL` set to the production origin. Apply all four migrations to the production Supabase project and allowlist `https://<your-domain>/auth/callback` plus its password reset variant in Supabase Auth. Configure Google credentials in Supabase only if Google login is desired. Confirm the database and storage policies before accepting users.
+To run real authentication and the shared marketplace, deploy the Next.js app to a platform that supports its server actions, such as Vercel. The existing Cloudflare Pages `site/` deployment remains a static demo and does not run this Next.js code. Configure the same three environment variables for production, with `NEXT_PUBLIC_SITE_URL` set to the production origin. Apply all five migrations to the production Supabase project and allowlist `https://<your-domain>/auth/callback` plus its password reset variant in Supabase Auth. Configure Google credentials in Supabase only if Google login is desired. Confirm the database and storage policies before accepting users.
 
 ## Current scope
 
