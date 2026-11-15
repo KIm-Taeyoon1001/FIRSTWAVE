@@ -1,22 +1,15 @@
-'use client';
+﻿'use client';
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, FolderKanban, ClipboardList, MessageSquareText, ChartNoAxesCombined, UserRound, Settings, Bell, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ClipboardList, MessageSquareText, ChartNoAxesCombined, UserRound, Settings, Bell, ShieldCheck, UsersRound } from 'lucide-react';
 
 const groups = [
   { label: 'Workspace', items: [['Overview', '/dashboard', LayoutDashboard]] },
-  { label: 'Build & test', items: [
-    ['My Projects', '/dashboard/projects', FolderKanban],
-    ['Applications', '/dashboard/applications', ClipboardList],
-    ['Feedback', '/dashboard/feedback', MessageSquareText],
-    ['Analytics', '/dashboard/analytics', ChartNoAxesCombined],
-  ] },
-  { label: 'Account', items: [
-    ['Notifications', '/dashboard/notifications', Bell],
-    ['Profile', '/dashboard/profile', UserRound],
-    ['Settings', '/dashboard/settings', Settings],
-  ] },
+  { label: 'Maker', items: [['My Projects', '/dashboard/projects', FolderKanban], ['Analytics', '/dashboard/analytics', ChartNoAxesCombined]] },
+  { label: 'Tester', items: [['Applications', '/dashboard/applications', ClipboardList], ['Feedback', '/dashboard/feedback', MessageSquareText]] },
+  { label: 'Together', items: [['Community', '/dashboard/community', UsersRound]] },
+  { label: 'Account', items: [['Notifications', '/dashboard/notifications', Bell], ['Profile', '/dashboard/profile', UserRound], ['Settings', '/dashboard/settings', Settings]] },
 ] as const;
 
 export function DashboardNav({ isAdmin }: { isAdmin: boolean }) {

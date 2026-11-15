@@ -25,6 +25,28 @@ const projectSchema = z.object({
   deadline: z.string(), requirements: z.string(), instructions: z.string(),
   expected_feedback: z.string(), reward: z.string(),
 });
+const communityTopics = ['showcase', 'question', 'testing', 'discussion'] as const;
+
+export async function createCommunityPost(form: FormData) {
+  const { client, user } = await requireSession();
+  const parsed = z.object({ topic: z.enum(communityTopics), author_perspective: z.enum(['maker', 'tester', 'both']), title: z.string().trim().min(5).max(120), body: z.string().trim().min(20).max(5000) }).safeParse({ topic: value(form, 'topic'), author_perspective: value(form, 'author_perspective'), title: value(form, 'title'), body: value(form, 'body') });
+  if (!parsed.success) go('/dashboard/community', parsed.error.issues[0].message);
+  const { error } = await client.from('community_posts').insert({ ...parsed.data, author_id: user.id });
+  if (error) go('/dashboard/community', error.message);
+  revalidatePath('/dashboard/community');
+  go('/dashboard/community', 'Your post is live in the community');
+}
+
+export async function replyToCommunityPost(form: FormData) {
+  const { client, user } = await requireSession();
+  const postId = value(form, 'post_id');
+  const body = value(form, 'body');
+  if (!z.string().uuid().safeParse(postId).success || body.length < 2 || body.length > 3000) go('/dashboard/community', 'Write a reply between 2 and 3000 characters');
+  const { error } = await client.from('community_replies').insert({ post_id: postId, author_id: user.id, body });
+  if (error) go('/dashboard/community', error.message);
+  revalidatePath('/dashboard/community');
+  go('/dashboard/community', 'Reply added');
+}
 
 export async function signIn(form: FormData) {
   const client = await db();
