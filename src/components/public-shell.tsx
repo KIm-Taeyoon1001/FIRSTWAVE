@@ -5,9 +5,9 @@ import { currentUser } from '@/lib/supabase';
 export function Brand() {
   return <Link className="brand" href="/" aria-label="FIRSTWAVE home">
     <svg className="brand-icon" viewBox="0 0 48 48" fill="none" aria-hidden="true">
-      <rect width="48" height="48" rx="13" fill="#16A36A"/>
-      <path d="M8 27.5c4.8 0 4.8-10 9.6-10s4.8 10 9.6 10 4.8-10 9.6-10" stroke="white" strokeWidth="3.6" strokeLinecap="round" strokeLinejoin="round"/>
-      <path d="M8 35c4.8 0 4.8-10 9.6-10s4.8 10 9.6 10 4.8-10 9.6-10" stroke="white" strokeOpacity=".43" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round"/>
+      <rect width="48" height="48" rx="14" fill="#173B29"/>
+      <path d="M8 27.5h7l4-11 7 19 5-13 3 5h6" stroke="#39D98A" strokeWidth="3.4" strokeLinecap="round" strokeLinejoin="round"/>
+      <circle cx="38" cy="27.5" r="2.2" fill="#E6FFF0"/>
     </svg>
     <span className="brand-lockup"><strong>FIRST<span>WAVE</span></strong><small>BUILD · LAUNCH · LEARN</small></span>
   </Link>;
