@@ -8,6 +8,8 @@ The deployable static site is committed in `site/`. In Cloudflare Pages, connect
 
 The `site/` deployment includes Explore, How It Works, Pricing, a developer introduction at `/developers/`, and an interactive workspace. With no Supabase public key configured, `/login/` and `/dashboard/` use a **local demo**. Use `demo@firstwave.app` / `Firstwave123!` to enter. This is a public preview credential, not a real account. Demo projects and the demo login flag are stored only in the current browser. Do not enter private information in the demo.
 
+The static site also has an English/Korean language toggle and a `/community/` page. The community reads and writes through Supabase browser APIs protected by migration 006 RLS. Set the Supabase public key before expecting shared posts and replies; with no key, the page explains that community sign-in is unavailable. It never substitutes fabricated community posts.
+
 To enable real email login, registration, Google sign-in, and password recovery on the static Pages deployment:
 
 1. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in local `.env.local` or the build environment. A legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` also works. Use **only** a publishable or anon key. The builder rejects other key types. Public keys are embedded in `site/auth-config.js`; they are visible to every visitor.
@@ -32,7 +34,7 @@ If npm packages cannot be downloaded, run `npm run preview:static` for the depen
 
 ## Routes
 
-Public: `/`, `/developers`, `/explore`, `/projects/[slug]`, `/how-it-works`, `/pricing`, `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/suspended`.
+Public: `/`, `/developers`, `/explore`, `/projects/[slug]`, `/how-it-works`, `/pricing`, `/community`, `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/suspended`.
 
 Signed in: `/dashboard`, `/dashboard/projects`, `/dashboard/projects/new`, `/dashboard/projects/[id]`, `/dashboard/applications`, `/dashboard/feedback`, `/dashboard/analytics`, `/dashboard/community`, `/dashboard/notifications`, `/dashboard/profile`, `/dashboard/settings`.
 

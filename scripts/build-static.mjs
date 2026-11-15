@@ -4,6 +4,7 @@ import { dirname, resolve } from 'node:path';
 import { html } from './preview-server.mjs';
 import { buildDemoPages } from './demo-site.mjs';
 import { buildPublicPages } from './public-pages.mjs';
+import { buildCommunityPage } from './community-page.mjs';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const output = resolve(root, 'site');
@@ -58,10 +59,12 @@ page = page
   .replaceAll('<a href="#launch">Early Access</a>', '<a href="/pricing/">Pricing</a>')
   .replace('<a class="button secondary" href="#projects">For Testers', '<a class="button secondary" href="/explore/">For Testers')
   .replace('<a class="small-link" href="#launch">Early access details', '<a class="small-link" href="/explore/">Explore projects');
+page = page.replaceAll('<a href="/developers/">For Developers</a>', '<a href="/developers/">For Developers</a><a href="/community/">Community</a>');
 await mkdir(output, { recursive: true });
 await writeFile(resolve(output, 'index.html'), page, 'utf8');
 await buildDemoPages(root, output, page);
 await buildPublicPages(output, page);
+await buildCommunityPage(root, output, page);
 const authMessage = '<p id="auth-message" class="demo-error" role="status" aria-live="polite" hidden></p>';
 const googleButton = '<button id="google-login" class="button light auth-google" type="button" hidden>Continue with Google</button>';
 const liveLogin = `<form id="live-login" class="form-stack auth-fields" hidden><label>Email address<input class="field" name="email" type="email" autocomplete="username" required></label><label>Password<input class="field" name="password" type="password" autocomplete="current-password" required></label>${authMessage}<button class="button">Log in</button></form>${googleButton}<p id="forgot-link" class="auth-switch" hidden><a class="small-link" href="/forgot-password/">Forgot password?</a></p>`;
@@ -84,15 +87,17 @@ for (const [route, title, form] of [
   ['forgot-password', 'Reset your password', '<form id="recover-form" class="form-stack auth-fields"><label>Email address<input class="field" name="email" type="email" autocomplete="email" required></label><button class="button">Send reset link</button></form>'],
   ['reset-password', 'Choose a new password', '<form id="reset-form" class="form-stack auth-fields"><label>New password<input class="field" name="password" type="password" autocomplete="new-password" minlength="8" required></label><button class="button">Update password</button></form>'],
 ]) { await mkdir(resolve(output, route), { recursive: true }); await writeFile(resolve(output, route, 'index.html'), authPage(title, form), 'utf8'); }
-for (const route of ['index.html','explore/index.html','how-it-works/index.html','developers/index.html','pricing/index.html','login/index.html','signup/index.html','dashboard/index.html','forgot-password/index.html','reset-password/index.html']) {
+for (const route of ['index.html','explore/index.html','how-it-works/index.html','developers/index.html','pricing/index.html','login/index.html','signup/index.html','dashboard/index.html','community/index.html','forgot-password/index.html','reset-password/index.html']) {
   const target = resolve(output, route);
   const markup = await readFile(target, 'utf8');
   if (!markup.includes('</body>')) throw new Error(`Missing document body in ${route}`);
-  await writeFile(target, markup.replace('</body>', '<script src="/auth-config.js"></script><script src="/browser-auth.js"></script><script src="/demo-auth.js"></script></body>'), 'utf8');
+  const pageScripts = '<script src="/auth-config.js"></script><script src="/browser-auth.js"></script><script src="/demo-auth.js"></script>' + (route === 'community/index.html' ? '<script src="/community.js"></script>' : '') + '<script src="/language.js"></script></body>';
+  await writeFile(target, markup.replace('</body>', pageScripts), 'utf8');
 }
 await writeFile(resolve(output, 'auth-config.js'), `window.FIRSTWAVE_AUTH_CONFIG = Object.freeze(${JSON.stringify({ url: supabaseUrl, publishableKey })});\n`, 'utf8');
 await writeFile(resolve(output, 'browser-auth.js'), await readFile(resolve(root, 'scripts/browser-auth.js')), 'utf8');
 await writeFile(resolve(output, 'demo-auth.js'), await readFile(resolve(root, 'scripts/demo-auth.js')), 'utf8');
+await writeFile(resolve(output, 'language.js'), await readFile(resolve(root, 'scripts/language.js')), 'utf8');
 await writeFile(resolve(output, 'marketing.css'), await readFile(resolve(root, 'scripts/marketing.css')), 'utf8');
 await writeFile(resolve(output, 'favicon.svg'), await readFile(resolve(root, 'src/app/icon.svg')), 'utf8');
 await writeFile(resolve(output, '_headers'), [
