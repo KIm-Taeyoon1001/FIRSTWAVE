@@ -95,5 +95,13 @@ await writeFile(resolve(output, 'browser-auth.js'), await readFile(resolve(root,
 await writeFile(resolve(output, 'demo-auth.js'), await readFile(resolve(root, 'scripts/demo-auth.js')), 'utf8');
 await writeFile(resolve(output, 'marketing.css'), await readFile(resolve(root, 'scripts/marketing.css')), 'utf8');
 await writeFile(resolve(output, 'favicon.svg'), await readFile(resolve(root, 'src/app/icon.svg')), 'utf8');
-await writeFile(resolve(output, '_headers'), '/*\n  X-Content-Type-Options: nosniff\n  Referrer-Policy: strict-origin-when-cross-origin\n  X-Frame-Options: DENY\n', 'utf8');
+await writeFile(resolve(output, '_headers'), [
+  '/*',
+  '  X-Content-Type-Options: nosniff',
+  '  Referrer-Policy: strict-origin-when-cross-origin',
+  '  X-Frame-Options: DENY',
+  '  Permissions-Policy: camera=(), microphone=(), geolocation=()',
+  "  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://accounts.google.com; script-src 'self' https://cdn.jsdelivr.net; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://xxytpyxnxaiwgzglsyel.supabase.co wss://xxytpyxnxaiwgzglsyel.supabase.co",
+  '',
+].join('\n'), 'utf8');
 console.log(`Static FIRSTWAVE site built at ${output}`);
