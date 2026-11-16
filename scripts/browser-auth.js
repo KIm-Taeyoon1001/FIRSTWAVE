@@ -45,9 +45,21 @@
   const destination = '/dashboard/';
 
   async function prepare() {
-    if (path === '/login') { hide('demo-login'); hide('demo-credentials'); hide('demo-notice'); show('live-login'); show('google-login'); show('forgot-link'); }
+    if (path === '/login') {
+      hide('demo-login'); hide('demo-credentials'); hide('demo-notice'); show('live-login'); show('google-login'); show('forgot-link');
+      const eyebrow = document.getElementById('auth-eyebrow');
+      const description = document.getElementById('auth-description');
+      if (eyebrow) eyebrow.textContent = 'SECURE ACCOUNT ACCESS';
+      if (description) description.textContent = 'Log in to manage your products and tester participation.';
+    }
     if (path === '/signup') { hide('signup-preview'); hide('demo-notice'); show('live-signup'); show('google-login'); }
     if (path === '/forgot-password' || path === '/reset-password') hide('unconfigured-message');
+    document.querySelectorAll('a[href="/login/"]').forEach(link => {
+      const label = link.textContent.trim();
+      if (label === 'Try Demo') { link.href = '/signup/'; link.textContent = 'Get Started'; }
+      else if (['Try the workspace', 'Try the demo workspace', 'Try the demo account'].includes(label)) link.textContent = 'Log in';
+      else if (label === 'Open the preview') link.textContent = 'Open workspace';
+    });
     try {
       const user = await currentUser();
       if (!user) return;

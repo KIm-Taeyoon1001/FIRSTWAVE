@@ -24,6 +24,7 @@ for (const route of ['/explore/','/how-it-works/','/developers/','/pricing/','/c
 if (!login.includes('id="demo-login"') || !login.includes('Demo mode')) throw new Error('Demo login is missing or mislabeled');
 if (!signup.includes('Registration will open') || !signup.includes('href="/login/"')) throw new Error('Sign up state is unclear');
 if (!login.includes('id="live-login"') || !signup.includes('id="live-signup"') || !forgot.includes('id="recover-form"') || !reset.includes('id="reset-form"')) throw new Error('Live auth pages are incomplete');
+if (!login.includes('id="auth-eyebrow"') || !login.includes('id="auth-description"')) throw new Error('Login page is missing live-auth copy targets');
 if (!community.includes('community-post-form') || !community.includes('community.js') || !community.includes('author_perspective')) throw new Error('Static community page is incomplete');
 const authConfig = await readFile(new URL('../site/auth-config.js', import.meta.url), 'utf8');
 const browserAuth = await readFile(new URL('../site/browser-auth.js', import.meta.url), 'utf8');

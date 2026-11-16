@@ -12,7 +12,9 @@ const form = {
   addEventListener: (name, handler) => { if (name === 'submit') loginHandler = handler; },
 };
 const message = { hidden: true, textContent: '', className: '' };
-const nodes = { 'live-login': form, 'auth-message': message };
+const eyebrow = { textContent: 'INTERACTIVE PREVIEW' };
+const description = { textContent: 'Explore the developer workspace with a local demo account.' };
+const nodes = { 'live-login': form, 'auth-message': message, 'auth-eyebrow': eyebrow, 'auth-description': description };
 const client = { auth: {
   getUser: async () => ({ data: { user: null }, error: null }),
   signInWithPassword: async ({ email, password }) => {
@@ -26,9 +28,11 @@ const window = {
   supabase: { createClient: () => client },
   location: { pathname: '/login/', origin: 'https://firstwave.example', assign: path => { destination = path; }, replace: path => { destination = path; } },
 };
-const document = { getElementById: id => nodes[id] || null, querySelector: () => null };
+const document = { getElementById: id => nodes[id] || null, querySelector: () => null, querySelectorAll: () => [] };
 runInNewContext(source, { window, document, URL, console });
 if (!window.FIRSTWAVE_BROWSER_AUTH.configured || !loginHandler || form.hidden) throw new Error('Live login did not initialize');
+await Promise.resolve();
+if (eyebrow.textContent !== 'SECURE ACCOUNT ACCESS' || description.textContent.includes('demo account')) throw new Error('Live login still shows demo-only copy');
 await loginHandler({ preventDefault() {}, currentTarget: form });
 if (loginCalls !== 1 || destination !== '/dashboard/') throw new Error('Live login did not authenticate and redirect');
 console.log('Browser auth OK: configured login calls Supabase and opens workspace');
