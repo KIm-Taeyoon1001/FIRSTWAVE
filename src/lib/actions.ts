@@ -1,13 +1,24 @@
 'use server';
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
+import { headers } from 'next/headers';
 import { z } from 'zod';
 import { db, currentUser } from './supabase';
 
 function value(form: FormData, key: string) { return String(form.get(key) || '').trim(); }
 function go(path: string, message: string): never { redirect(`${path}?message=${encodeURIComponent(message)}`); }
-function callbackUrl(next = '/dashboard') {
-  const url = new URL('/auth/callback', process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000');
+async function callbackUrl(next = '/dashboard') {
+  const requestHeaders = await headers();
+  const requestOrigin = requestHeaders.get('origin');
+  const forwardedHost = requestHeaders.get('x-forwarded-host')?.split(',')[0].trim();
+  const host = forwardedHost || requestHeaders.get('host');
+  const forwardedProto = requestHeaders.get('x-forwarded-proto')?.split(',')[0].trim();
+  const requestBase = requestOrigin || (host ? `${forwardedProto || (host.startsWith('localhost') ? 'http' : 'https')}://${host}` : undefined);
+  const configuredBase = process.env.NEXT_PUBLIC_SITE_URL;
+  const base = requestBase && (!configuredBase || new URL(configuredBase).hostname === 'localhost')
+    ? requestBase
+    : configuredBase || requestBase || 'http://localhost:3000';
+  const url = new URL('/auth/callback', base);
   if (next !== '/dashboard') url.searchParams.set('next', next);
   return url.toString();
 }
@@ -86,7 +97,7 @@ export async function signUp(form: FormData) {
     if (parsed.error.issues.some(issue => issue.path[0] === 'confirm_password')) go('/signup', 'Passwords do not match');
     go('/signup', 'Enter a name, valid email and matching passwords of at least 8 characters');
   }
-  const { data, error } = await client.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { data: { full_name: parsed.data.name }, emailRedirectTo: callbackUrl() } });
+  const { data, error } = await client.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { data: { full_name: parsed.data.name }, emailRedirectTo: await callbackUrl() } });
   if (error) go('/signup', error.message);
   if (data.session) redirect('/dashboard');
   redirect('/login?message=Check+your+email+to+confirm+your+account');
@@ -94,7 +105,7 @@ export async function signUp(form: FormData) {
 export async function googleSignIn() {
   const client = await db();
   if (!client) go('/login', 'Supabase is not configured');
-  const { data, error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: callbackUrl() } });
+  const { data, error } = await client.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: await callbackUrl() } });
   if (error || !data.url) go('/login', error?.message || 'Google sign in is unavailable');
   redirect(data.url);
 }
@@ -108,7 +119,7 @@ export async function requestPasswordReset(form: FormData) {
   if (!client) go('/forgot-password', 'Supabase is not configured');
   const email = value(form, 'email');
   if (!z.string().email().safeParse(email).success) go('/forgot-password', 'Enter a valid email address');
-  const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: callbackUrl('/reset-password') });
+  const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: await callbackUrl('/reset-password') });
   if (error) go('/forgot-password', error.message);
   go('/forgot-password', 'If an account exists, a password reset email is on its way');
 }
