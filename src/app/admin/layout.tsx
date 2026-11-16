@@ -3,6 +3,8 @@ import { redirect } from 'next/navigation';
 import { db, currentUser } from '@/lib/supabase';
 import { Brand } from '@/components/public-shell';
 
+export const dynamic = 'force-dynamic';
+
 export default async function AdminLayout({children}:{children:React.ReactNode}) {
   const client = await db(), user = await currentUser();
   if (!client || !user) redirect('/login');

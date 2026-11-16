@@ -6,6 +6,8 @@ import { Brand } from '@/components/public-shell';
 import { DashboardNav } from '@/components/dashboard-nav';
 import { signOut } from '@/lib/actions';
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardLayout({children}:{children:React.ReactNode}) {
   const user = await currentUser();
   if (!user) redirect('/login?message=Please+sign+in+to+continue');
