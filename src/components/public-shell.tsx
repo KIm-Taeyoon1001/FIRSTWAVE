@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { signOut } from '@/lib/actions';
 import { currentUser } from '@/lib/supabase';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export function Brand() {
   return <Link className="brand" href="/" aria-label="FIRSTWAVE home">
@@ -21,7 +22,7 @@ export async function PublicHeader({ dark = false }: { dark?: boolean }) {
       <nav className="nav-links" aria-label="Primary navigation" style={dark ? {} : {color:'#55675a'}}>
         <Link href="/explore">Explore</Link><Link href="/how-it-works">How It Works</Link><Link href="/developers">For Developers</Link><Link href="/pricing">Pricing</Link>
       </nav>
-      <div className="nav-actions">{user ? <><span className="auth-status" title={user.email}><span className="auth-status-dot"/>Signed in</span><Link className="button small" href="/dashboard">Workspace</Link><form action={signOut}><button className="auth-signout">Sign out</button></form></> : <><Link className="login-link" href="/login">Log In</Link><Link className="button small" href="/signup">Get Started</Link></>}</div>
+      <div className="nav-actions"><ThemeToggle/>{user ? <><span className="auth-status" title={user.email}><span className="auth-status-dot"/>Signed in</span><Link className="button small" href="/dashboard">Workspace</Link><form action={signOut}><button className="auth-signout">Sign out</button></form></> : <><Link className="login-link" href="/login">Log In</Link><Link className="button small" href="/signup">Get Started</Link></>}</div>
       <details className="mobile-nav"><summary aria-label="Open navigation"><span/><span/><span/></summary><nav aria-label="Mobile navigation"><Link href="/explore">Explore</Link><Link href="/how-it-works">How It Works</Link><Link href="/developers">For Developers</Link><Link href="/pricing">Pricing</Link>{user ? <><span className="auth-status"><span className="auth-status-dot"/>Signed in</span><Link href="/dashboard">Workspace</Link><form action={signOut}><button className="auth-signout">Sign out</button></form></> : <><Link href="/login">Log In</Link><Link href="/signup">Get Started</Link></>}</nav></details>
     </div>
   </header>;

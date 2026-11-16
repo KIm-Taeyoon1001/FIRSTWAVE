@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { db, currentUser } from '@/lib/supabase';
 import { Brand } from '@/components/public-shell';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,7 +14,7 @@ export default async function AdminLayout({children}:{children:React.ReactNode})
   return <div className="dash">
     <aside className="dash-side"><Brand/><nav aria-label="Administration">
       <Link href="/admin">Overview</Link><Link href="/admin/projects">Project moderation</Link><Link href="/admin/users">Users</Link><Link href="/admin/reports">Reports</Link><Link href="/admin/audit">Audit logs</Link><Link href="/dashboard">Back to workspace</Link>
-    </nav></aside>
+    </nav><ThemeToggle/></aside>
     <main className="dash-content">{children}</main>
   </div>;
 }
