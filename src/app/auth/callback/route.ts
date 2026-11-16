@@ -16,7 +16,9 @@ export async function GET(request: NextRequest) {
   const client = createServerClient(supabaseUrl, publishableKey, {
     cookies: {
       getAll() { return request.cookies.getAll(); },
-      setAll(items) { items.forEach(({ name, value, options }) => response.cookies.set(name, value, options)); },
+      setAll(items: Array<{ name: string; value: string; options?: Parameters<NextResponse['cookies']['set']>[2] }>) {
+        items.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+      },
     },
   });
 
