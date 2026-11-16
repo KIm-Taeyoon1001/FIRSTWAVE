@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { ArrowRight, Check, LockKeyhole, Mail, MailCheck, Sparkles } from 'lucide-react';
+import { ArrowRight, Check, LockKeyhole, MailCheck, Sparkles } from 'lucide-react';
 import { googleSignIn, signIn, signUp } from '@/lib/actions';
 import { configured } from '@/lib/supabase';
 
@@ -25,8 +25,17 @@ export function AuthForm({ mode, message }: { mode: 'login' | 'signup'; message?
         {signup && <div className="auth-confirmation"><MailCheck size={17}/><span><strong>Confirm by email</strong>We’ll send a link to verify your address before you get started.</span></div>}
         <button className="button" disabled={!configured}>{signup ? 'Create account' : 'Log in'}<ArrowRight size={16}/></button>
       </form>
-      <div className="auth-divider"><span>or</span></div><form action={googleSignIn}><button className="button light auth-google" disabled={!configured}><Mail size={16}/> Continue with Google</button></form>
+      <div className="auth-divider"><span>or</span></div><form action={googleSignIn}><button className="button light auth-google" disabled={!configured}><GoogleMark/> Continue with Google</button></form>
       <p className="auth-switch">{signup ? 'Already have an account?' : 'New to FIRSTWAVE?'} <Link className="small-link" href={signup ? '/login' : '/signup'}>{signup ? 'Log in' : 'Create an account'}</Link></p>
     </section>
   </div></main>;
+}
+
+function GoogleMark() {
+  return <svg className="google-mark" viewBox="0 0 48 48" aria-hidden="true">
+    <path fill="#4285F4" d="M43.611 20.083H42V20H24v8h11.303A12 12 0 0 1 13.3 31.107l-6.59 5.11A20 20 0 0 0 44 24c0-1.34-.138-2.648-.389-3.917Z"/>
+    <path fill="#34A853" d="M24 44c5.4 0 10.23-2.06 13.9-5.43l-6.42-5.43A12 12 0 0 1 13.3 31.107l-6.59 5.11A20 20 0 0 0 24 44Z"/>
+    <path fill="#FBBC05" d="M13.3 31.107a12 12 0 0 1 0-14.214L6.71 11.783a20 20 0 0 0 0 24.434l6.59-5.11Z"/>
+    <path fill="#EA4335" d="M24 8a11.9 11.9 0 0 1 8.45 3.3l5.96-5.96A19.9 19.9 0 0 0 24 4 20 20 0 0 0 6.71 11.783l6.59 5.11A12 12 0 0 1 24 8Z"/>
+  </svg>;
 }
