@@ -8,7 +8,7 @@ export async function middleware(request: NextRequest) {
   const client = createServerClient(supabaseUrl, publishableKey, {
     cookies: {
       getAll() { return request.cookies.getAll(); },
-      setAll(items) {
+      setAll(items: Array<{ name: string; value: string; options?: Parameters<NextResponse['cookies']['set']>[2] }>) {
         items.forEach(({name,value}) => request.cookies.set(name,value));
         response = NextResponse.next({request});
         items.forEach(({name,value,options}) => response.cookies.set(name,value,options));

@@ -1,5 +1,6 @@
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import type { NextResponse } from 'next/server';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const publishableKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
@@ -11,7 +12,9 @@ export async function db() {
   return createServerClient(supabaseUrl!, publishableKey!, {
     cookies: {
       getAll() { return jar.getAll(); },
-      setAll(items) { try { items.forEach(({ name, value, options }) => jar.set(name, value, options)); } catch { /* Server Components cannot set cookies. */ } },
+      setAll(items: Array<{ name: string; value: string; options?: Parameters<NextResponse['cookies']['set']>[2] }>) {
+        try { items.forEach(({ name, value, options }) => jar.set(name, value, options)); } catch { /* Server Components cannot set cookies. */ }
+      },
     },
   });
 }
