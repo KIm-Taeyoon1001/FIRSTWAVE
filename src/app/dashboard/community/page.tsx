@@ -27,7 +27,7 @@ export default async function Community({ searchParams }: { searchParams: Promis
         {message && <p className="message" role="status">{message}</p>}
         <h2 id="community-compose-title">Start a conversation</h2>
         <form action={createCommunityPost} className="community-form">
-          <div className="community-form-row"><label>Your perspective<select name="author_perspective" defaultValue="both"><option value="maker">Maker</option><option value="tester">Beta tester</option><option value="both">Both</option></select></label><label>Topic<select name="topic" defaultValue="question"><option value="showcase">Product showcase</option><option value="question">Question</option><option value="testing">Testing help</option><option value="discussion">Discussion</option></select></label>
+          <div className="community-form-row"><label>Your perspective<select name="author_perspective" defaultValue="both"><option value="maker">Maker</option><option value="tester">Beta tester</option><option value="both">Both</option></select></label><label>Topic<select name="topic" defaultValue="question"><option value="showcase">Product showcase</option><option value="question">Question</option><option value="testing">Testing help</option><option value="discussion">Discussion</option></select></label></div>
           <label>Title<input className="field" name="title" minLength={5} maxLength={120} required placeholder="What would you like to discuss?"/></label>
           <label>Details<textarea name="body" minLength={20} maxLength={5000} required placeholder="Give the community enough context to respond."/></label>
           <button className="button" type="submit">Post to community</button>
