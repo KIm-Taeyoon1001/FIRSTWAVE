@@ -1,9 +1,10 @@
-﻿(() => {
+(() => {
   const state = document.getElementById('community-state');
   const formWrap = document.getElementById('community-compose-form');
   const list = document.getElementById('community-posts');
   const errorBox = document.getElementById('community-error');
   const topics = { showcase: 'Product showcase', question: 'Question', testing: 'Testing help', discussion: 'Discussion' };
+  let activeFilter = 'all';
   const esc = value => String(value ?? '');
   const node = (tag, text, className) => { const element = document.createElement(tag); element.textContent = text; if (className) element.className = className; return element; };
   async function start() {
@@ -14,6 +15,7 @@
       if (!user) { state.replaceChildren(document.createTextNode('Sign in to join the shared FIRSTWAVE community. ')); const link = node('a', 'Log in'); link.href = '/login/'; state.append(link); return; }
       state.textContent = 'Signed in as ' + (user.email || 'FIRSTWAVE member');
       formWrap.hidden = false;
+      document.getElementById('community-member-tools').hidden = false;
       await loadPosts();
     } catch (error) { state.textContent = error.message || 'Could not connect to the community.'; }
   }
@@ -28,6 +30,8 @@
     const names = new Map((profiles || []).map(profile => [profile.user_id, profile.display_name || 'FIRSTWAVE member']));
     for (const post of posts) {
       const article = node('article', '', 'community-post');
+      article.dataset.topic = post.topic;
+      article.dataset.perspective = post.author_perspective;
       const meta = node('div', '', 'community-post-meta');
       meta.append(node('span', topics[post.topic] || 'Discussion', 'community-topic ' + post.topic));
       meta.append(node('span', post.author_perspective === 'maker' ? 'Maker' : post.author_perspective === 'tester' ? 'Beta tester' : 'Maker + tester', 'community-perspective'));
@@ -52,7 +56,29 @@
       replyForm.addEventListener('submit', async event => { event.preventDefault(); replyButton.disabled = true; try { const { error } = await client.from('community_replies').insert({ post_id: post.id, author_id: window.communityUser.id, body: input.value.trim() }); if (error) throw error; await loadPosts(); } catch (error) { window.alert(error.message); replyButton.disabled = false; } });
       replies.append(replyForm); article.append(meta, title, body, replies); list.append(article);
     }
+    applyFilter();
   }
+  function applyFilter() {
+    list.querySelectorAll('.community-post').forEach(post => {
+      const matches = activeFilter === 'all' || post.dataset.perspective === activeFilter || (activeFilter === 'testing' && post.dataset.topic === 'testing');
+      post.hidden = !matches;
+    });
+    document.querySelectorAll('[data-community-filter]').forEach(button => button.setAttribute('aria-pressed', String(button.dataset.communityFilter === activeFilter)));
+  }
+  document.querySelectorAll('[data-community-filter]').forEach(button => button.addEventListener('click', () => { activeFilter = button.dataset.communityFilter; applyFilter(); }));
+  document.querySelectorAll('[data-exchange]').forEach(button => button.addEventListener('click', () => {
+    if (formWrap.hidden) return;
+    const form = document.getElementById('community-post-form');
+    const maker = button.dataset.exchange === 'maker';
+    form.elements.author_perspective.value = maker ? 'maker' : 'tester';
+    form.elements.topic.value = 'testing';
+    form.elements.title.value = maker ? 'Looking for testers for…' : 'I can test…';
+    form.elements.body.value = maker
+      ? 'Product link:\nPlatform and devices:\nWhat should testers try?\nWhat feedback would help most?'
+      : 'Products or categories I can test:\nMy devices and platforms:\nTesting experience:\nAvailability:';
+    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    form.elements.title.focus();
+  }));
   document.getElementById('community-post-form').addEventListener('submit', async event => {
     event.preventDefault(); const form = event.currentTarget; const button = form.querySelector('button'); button.disabled = true; errorBox.hidden = true;
     try { const client = await window.FIRSTWAVE_BROWSER_AUTH.getClient(); const values = Object.fromEntries(new FormData(form)); const { error } = await client.from('community_posts').insert({ ...values, author_id: window.communityUser.id }); if (error) throw error; form.reset(); await loadPosts(); }

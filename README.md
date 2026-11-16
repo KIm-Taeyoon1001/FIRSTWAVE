@@ -10,6 +10,8 @@ The `site/` deployment includes Explore, How It Works, Pricing, a developer intr
 
 The static site also has an English/Korean language toggle and a `/community/` page. The community reads and writes through Supabase browser APIs protected by migration 006 RLS. Set the Supabase public key before expecting shared posts and replies; with no key, the page explains that community sign-in is unavailable. It never substitutes fabricated community posts.
 
+The FIRSTWAVE Test Exchange is the core community interaction: makers can post focused testing requests, testers can offer their device and testing perspective, and either can filter posts by role or request type. Quick-start buttons prepare a structured request/offer template. This keeps discussions tied to actual product validation rather than a general-purpose social feed.
+
 To enable real email login, registration, Google sign-in, and password recovery on the static Pages deployment:
 
 1. Set `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` in local `.env.local` or the build environment. A legacy `NEXT_PUBLIC_SUPABASE_ANON_KEY` also works. Use **only** a publishable or anon key. The builder rejects other key types. Public keys are embedded in `site/auth-config.js`; they are visible to every visitor.

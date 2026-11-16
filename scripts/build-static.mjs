@@ -60,6 +60,7 @@ page = page
   .replace('<a class="button secondary" href="#projects">For Testers', '<a class="button secondary" href="/explore/">For Testers')
   .replace('<a class="small-link" href="#launch">Early access details', '<a class="small-link" href="/explore/">Explore projects');
 page = page.replaceAll('<a href="/developers/">For Developers</a>', '<a href="/developers/">For Developers</a><a href="/community/">Community</a>');
+page = page.replace('<footer class="footer">', `<section class="section exchange-intro"><div class="container"><div class="section-heading"><div><span class="eyebrow">THE FIRSTWAVE TEST EXCHANGE</span><h2>Find the right people. Learn from a real test.</h2></div><p>Makers bring a focused question. Testers bring their devices, experience, and honest perspective. Every conversation can lead to a better product.</p></div><div class="exchange-intro-grid"><article><span>FOR MAKERS</span><h3>Ask for the signal you need.</h3><p>Share a product link, testing task, and the part of the experience you want to understand.</p><a class="small-link" href="/community/">Post a testing request →</a></article><article><span>FOR TESTERS</span><h3>Turn curiosity into useful feedback.</h3><p>Offer the devices and perspective you can bring, then respond to real product questions.</p><a class="small-link" href="/community/">Offer to test →</a></article></div></div></section><footer class="footer">`);
 await mkdir(output, { recursive: true });
 await writeFile(resolve(output, 'index.html'), page, 'utf8');
 await buildDemoPages(root, output, page);
