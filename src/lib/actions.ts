@@ -68,8 +68,24 @@ export async function signIn(form: FormData) {
 export async function signUp(form: FormData) {
   const client = await db();
   if (!client) go('/signup', 'Supabase is not configured');
-  const parsed = z.object({ email: z.string().email(), password: z.string().min(8), name: z.string().min(2) }).safeParse({ email: value(form,'email'), password: String(form.get('password') ?? ''), name: value(form,'name') });
-  if (!parsed.success) go('/signup', 'Enter a name, valid email and password of at least 8 characters');
+  const parsed = z.object({
+    email: z.string().email(),
+    password: z.string().min(8),
+    confirm_password: z.string().min(8),
+    name: z.string().min(2),
+  }).refine(data => data.password === data.confirm_password, {
+    path: ['confirm_password'],
+    message: 'Passwords do not match',
+  }).safeParse({
+    email: value(form, 'email'),
+    password: String(form.get('password') ?? ''),
+    confirm_password: String(form.get('confirm_password') ?? ''),
+    name: value(form, 'name'),
+  });
+  if (!parsed.success) {
+    if (parsed.error.issues.some(issue => issue.path[0] === 'confirm_password')) go('/signup', 'Passwords do not match');
+    go('/signup', 'Enter a name, valid email and matching passwords of at least 8 characters');
+  }
   const { data, error } = await client.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { data: { full_name: parsed.data.name }, emailRedirectTo: callbackUrl() } });
   if (error) go('/signup', error.message);
   if (data.session) redirect('/dashboard');
