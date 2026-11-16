@@ -15,9 +15,21 @@ async function callbackUrl(next = '/dashboard') {
   const forwardedProto = requestHeaders.get('x-forwarded-proto')?.split(',')[0].trim();
   const requestBase = requestOrigin || (host ? `${forwardedProto || (host.startsWith('localhost') ? 'http' : 'https')}://${host}` : undefined);
   const configuredBase = process.env.NEXT_PUBLIC_SITE_URL;
-  const base = requestBase && (!configuredBase || new URL(configuredBase).hostname === 'localhost')
-    ? requestBase
-    : configuredBase || requestBase || 'http://localhost:3000';
+  const isLocal = (value?: string) => {
+    if (!value) return false;
+    try {
+      const hostname = new URL(value).hostname;
+      return hostname === 'localhost' || hostname === '127.0.0.1' || hostname.endsWith('.localhost');
+    } catch {
+      return true;
+    }
+  };
+  const productionBase = configuredBase && !isLocal(configuredBase)
+    ? configuredBase
+    : 'https://firstwave.kty10010.workers.dev';
+  const base = process.env.NODE_ENV === 'production'
+    ? productionBase
+    : requestBase || configuredBase || 'http://localhost:3000';
   const url = new URL('/auth/callback', base);
   if (next !== '/dashboard') url.searchParams.set('next', next);
   return url.toString();
