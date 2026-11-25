@@ -12,7 +12,7 @@ export default async function Notifications({searchParams}:{searchParams:Promise
     <div className="panel"><div style={{display:'flex',justifyContent:'space-between',alignItems:'center',gap:12}}><h2>Recent updates</h2>
       {data?.some(item => !item.read_at) && <form action={markNotificationRead}><button className="button small light">Mark all as read</button></form>}
     </div>
-      {data?.length ? <div>{data.map(item => <div key={item.id} className="feature-row" style={{borderColor:'var(--line)',gap:16,alignItems:'start',background:item.read_at?'transparent':'#20382a',padding:'16px 12px'}}>
+      {data?.length ? <div>{data.map(item => <div key={item.id} className={`feature-row ${item.read_at ? '' : 'notification-unread'}`} style={{borderColor:'var(--line)',gap:16,alignItems:'start',padding:'16px 12px'}}>
         <Bell size={17} color="#16a36a" style={{flex:'none'}}/>
         <div style={{flex:1}}><strong>{item.title}</strong><p style={{fontSize:12,color:'var(--muted)',margin:'4px 0'}}>{item.body}</p><small style={{color:'var(--muted)'}}>{new Date(item.created_at).toLocaleString()}</small></div>
         {!item.read_at && <form action={markNotificationRead}><input type="hidden" name="id" value={item.id}/><button className="button small light">Mark read</button></form>}
