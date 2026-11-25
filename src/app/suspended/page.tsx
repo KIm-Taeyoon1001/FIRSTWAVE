@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { PublicHeader } from '@/components/public-shell';
 import { signOut } from '@/lib/actions';
 import { currentUser, db } from '@/lib/supabase';
+import { privatePageMetadata } from '@/lib/seo';
+
+export const metadata = privatePageMetadata;
 
 export default async function Suspended() {
   const user = await currentUser();

@@ -4,6 +4,9 @@ import { ArrowRight } from 'lucide-react';
 import { PublicHeader } from '@/components/public-shell';
 import { updatePassword } from '@/lib/actions';
 import { currentUser } from '@/lib/supabase';
+import { privatePageMetadata } from '@/lib/seo';
+
+export const metadata = privatePageMetadata;
 
 export default async function ResetPassword({ searchParams }: { searchParams: Promise<{ message?: string }> }) {
   if (!await currentUser()) redirect('/forgot-password?message=Open+the+link+from+your+reset+email');

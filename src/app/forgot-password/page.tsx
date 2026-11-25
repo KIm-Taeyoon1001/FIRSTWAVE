@@ -3,6 +3,9 @@ import { ArrowRight, LockKeyhole } from 'lucide-react';
 import { PublicHeader } from '@/components/public-shell';
 import { requestPasswordReset } from '@/lib/actions';
 import { configured } from '@/lib/supabase';
+import { privatePageMetadata } from '@/lib/seo';
+
+export const metadata = privatePageMetadata;
 
 export default async function ForgotPassword({ searchParams }: { searchParams: Promise<{ message?: string }> }) {
   const { message } = await searchParams;

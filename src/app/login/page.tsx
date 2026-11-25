@@ -2,6 +2,9 @@ import { redirect } from 'next/navigation';
 import { PublicHeader } from '@/components/public-shell';
 import { AuthForm } from '@/components/auth-form';
 import { currentUser } from '@/lib/supabase';
+import { privatePageMetadata } from '@/lib/seo';
+
+export const metadata = privatePageMetadata;
 
 export default async function Login({ searchParams }: { searchParams: Promise<{ message?: string }> }) {
   if (await currentUser()) redirect('/dashboard');

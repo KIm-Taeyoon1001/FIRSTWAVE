@@ -5,9 +5,17 @@ import { ProjectCard } from '@/components/project-card';
 import { PublicHeader, Footer } from '@/components/public-shell';
 import type { Metadata } from 'next';
 
-export const metadata: Metadata = { title: 'Explore beta testing projects', description: 'Discover early-stage apps and apply to beta test products that match your interests.', alternates: { canonical: '/explore' } };
-
 type Filters = { q?: string; category?: string; platform?: string; recruitment?: string; sort?: string; page?: string };
+export async function generateMetadata({ searchParams }: { searchParams: Promise<Filters> }): Promise<Metadata> {
+  const filters = await searchParams;
+  const filtered = Object.values(filters).some(value => Boolean(value));
+  return {
+    title: 'Explore beta testing projects',
+    description: 'Discover early-stage apps and apply to beta test products that match your interests.',
+    alternates: { canonical: '/explore' },
+    ...(filtered ? { robots: { index: false, follow: true } } : {}),
+  };
+}
 const categories = ['Productivity','Developer Tools','Design','Education','Finance','Other'];
 const platforms = ['Web','iOS','Android','Desktop','API'];
 

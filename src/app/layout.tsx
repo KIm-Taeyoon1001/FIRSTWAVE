@@ -3,8 +3,9 @@ import './polish.css';
 import '../../scripts/marketing.css';
 import './theme.css';
 import type { Metadata } from 'next';
+import { siteUrl } from '@/lib/site-url';
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://firstwave.kty10010.workers.dev'),
+  metadataBase: new URL(siteUrl()),
   title: { default: 'FIRSTWAVE | Where Great Apps Meet Their Users', template: '%s | FIRSTWAVE' },
   description: 'Discover early-stage products, recruit beta testers, and collect feedback to build better apps.',
   openGraph: { type: 'website', siteName: 'FIRSTWAVE', title: 'FIRSTWAVE | Where Great Apps Meet Their Users', description: 'Discover early-stage products and connect with beta testers.' },

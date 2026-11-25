@@ -11,7 +11,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const project = await projectBySlug(slug);
   if (!project || project.status !== 'published') return { robots: { index: false, follow: false } };
-  const description = (project.tagline || project.description || '').slice(0, 160);
+  const description = (project.tagline || project.description || '').replace(/\s+/g, ' ').trim().slice(0, 160);
   return { title: project.name, description, alternates: { canonical: `/projects/${encodeURIComponent(slug)}` }, openGraph: { title: project.name, description, type: 'website' } };
 }
 
@@ -46,13 +46,13 @@ export default async function ProjectDetail({ params, searchParams }: {
       <div className="detail-layout">
         <article>
           <div style={{ display: 'flex', gap: 18, alignItems: 'center' }}>
-            <div className="project-logo" style={{ width: 68, height: 68, fontSize: 29 }}>{project.logo_url ? <img src={project.logo_url} alt=""/> : project.name[0]}</div>
+            <div className="project-logo" style={{ width: 68, height: 68, fontSize: 29 }}>{project.logo_url ? <img src={project.logo_url} alt={`${project.name} logo`}/> : project.name[0]}</div>
             <div><span className="pill">{project.category}</span><h1 style={{ fontSize: 43, margin: '7px 0 0' }}>{project.name}</h1></div>
           </div>
           <p style={{ fontSize: 19, color: 'var(--muted)', marginTop: 17 }}>{project.tagline}</p>
           <div className="project-meta"><span>{project.platform}</span><span>{closed ? 'Applications closed' : 'Recruiting testers'}</span></div>
           {project.screenshots?.length > 0 && <section className="detail-section"><h2>Product preview</h2><div style={{ display: 'flex', gap: 10, overflowX: 'auto' }}>{project.screenshots.map((url, index) => <img key={url} src={url} alt={`${project.name} screenshot ${index + 1}`} style={{ maxWidth: 300, borderRadius: 9, border: '1px solid var(--line)' }}/>)}</div></section>}
-          <section className="detail-section"><h2>About the product</h2><p style={{ whiteSpace: 'pre-wrap' }}>{project.description}</p>{project.product_url && <a className="small-link" href={project.product_url} target="_blank" rel="noopener noreferrer">Visit product <ExternalLink size={13} style={{ display: 'inline' }}/></a>}</section>
+          <section className="detail-section"><h2>About the product</h2><p style={{ whiteSpace: 'pre-wrap' }}>{project.description}</p>{project.product_url && <a className="small-link" href={project.product_url} target="_blank" rel="noopener noreferrer ugc nofollow">Visit {project.name} <ExternalLink size={13} style={{ display: 'inline' }}/></a>}</section>
           {maker && <section className="detail-section"><h2>Built by</h2><div style={{ display: 'flex', gap: 13, alignItems: 'center' }}><div className="project-logo" style={{ width: 44, height: 44, fontSize: 17 }}>{maker.avatar_url ? <img src={maker.avatar_url} alt=""/> : (maker.display_name || 'M').slice(0, 1).toUpperCase()}</div><div><strong>{maker.display_name || 'FIRSTWAVE maker'}</strong>{maker.bio && <p style={{ margin: '4px 0 0', whiteSpace: 'pre-wrap' }}>{maker.bio}</p>}</div></div></section>}
           {([['Ideal tester', project.requirements], ['Testing instructions', project.instructions], ['Expected feedback', project.expected_feedback], ['Rewards', project.reward]] as const).filter(([, body]) => body).map(([title, body]) => <section className="detail-section" key={title}><h2>{title}</h2><p style={{ whiteSpace: 'pre-wrap' }}>{body}</p></section>)}
           {user && user.id !== project.maker_id && <section className="detail-section"><h2>Report this project</h2><form action={reportProject} className="form-stack"><input type="hidden" name="project_id" value={project.id}/><input type="hidden" name="slug" value={slug}/><label>Reason<input className="field" name="reason" required minLength={5} maxLength={150}/></label><label>Details<textarea name="details" maxLength={2000}/></label><button className="button light" style={{ justifySelf: 'start' }}>Submit report</button></form></section>}
