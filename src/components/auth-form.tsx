@@ -27,6 +27,7 @@ export function AuthForm({ mode, message }: { mode: 'login' | 'signup'; message?
       </form>
       <div className="auth-divider"><span>or</span></div><form action={googleSignIn}><button className="button light auth-google" disabled={!configured}><GoogleMark/> Continue with Google</button></form>
       <p className="auth-switch">{signup ? 'Already have an account?' : 'New to FIRSTWAVE?'} <Link className="small-link" href={signup ? '/login' : '/signup'}>{signup ? 'Log in' : 'Create an account'}</Link></p>
+      <p className="auth-resend"><Link href="/resend-confirmation">Did not receive a confirmation email?</Link></p>
     </section>
   </div></main>;
 }

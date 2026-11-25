@@ -36,7 +36,7 @@ If npm packages cannot be downloaded, run `npm run preview:static` for the depen
 
 ## Routes
 
-Public: `/`, `/developers`, `/explore`, `/projects/[slug]`, `/how-it-works`, `/pricing`, `/community`, `/login`, `/signup`, `/forgot-password`, `/reset-password`, `/suspended`.
+Public: `/`, `/developers`, `/explore`, `/projects/[slug]`, `/how-it-works`, `/pricing`, `/community`, `/login`, `/signup`, `/resend-confirmation`, `/forgot-password`, `/reset-password`, `/suspended`.
 
 Signed in: `/dashboard`, `/dashboard/projects`, `/dashboard/projects/new`, `/dashboard/projects/[id]`, `/dashboard/applications`, `/dashboard/feedback`, `/dashboard/analytics`, `/dashboard/community`, `/dashboard/notifications`, `/dashboard/profile`, `/dashboard/settings`.
 

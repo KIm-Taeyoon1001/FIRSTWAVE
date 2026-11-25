@@ -41,6 +41,11 @@ export default async function ManageProject({ params, searchParams }: { params: 
     {editable ? <>
       <div className="panel"><h2>Project details</h2><p style={{fontSize:12,color:'var(--muted)'}}>Changes to a published project return it to moderation.</p><ProjectForm project={project}/></div>
       <div className="panel"><h2>Images</h2><p style={{fontSize:12,color:'var(--muted)'}}>PNG, JPEG, or WebP, up to 5 MB each. Up to eight screenshots.</p>
+        <div className="project-media-grid">
+          {project.logo_url && <figure><img src={project.logo_url} alt={`${project.name} logo`}/><figcaption>Current logo</figcaption></figure>}
+          {(project.screenshots || []).map((src, index) => <figure key={src}><img src={src} alt={`${project.name} screenshot ${index + 1}`}/><figcaption>Screenshot {index + 1}</figcaption></figure>)}
+          {!project.logo_url && !project.screenshots?.length && <p className="project-media-empty">No images uploaded yet. Add a logo and screenshots to help testers understand your product.</p>}
+        </div>
         {(['logo','screenshot'] as const).map(kind => <form key={kind} action={uploadProjectAsset} style={{display:'flex',gap:10,alignItems:'end',marginTop:12,flexWrap:'wrap'}}>
           <input type="hidden" name="id" value={id}/><input type="hidden" name="kind" value={kind}/>
           <label style={{fontSize:12,fontWeight:700}}>{kind === 'logo' ? 'Project logo' : 'Screenshot'}<input className="field" type="file" name="file" accept="image/png,image/jpeg,image/webp" required/></label>

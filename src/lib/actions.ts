@@ -7,6 +7,11 @@ import { db, currentUser } from './supabase';
 
 function value(form: FormData, key: string) { return String(form.get(key) || '').trim(); }
 function go(path: string, message: string): never { redirect(`${path}?message=${encodeURIComponent(message)}`); }
+function authErrorMessage(error: { message: string; status?: number }) {
+  if (error.message.includes('For security purposes')) return 'Please wait a minute before requesting another email';
+  if (error.status === 429) return 'Too many requests. Please try again shortly';
+  return error.message;
+}
 async function callbackUrl(next = '/dashboard') {
   const requestHeaders = await headers();
   const requestOrigin = requestHeaders.get('origin');
@@ -110,9 +115,20 @@ export async function signUp(form: FormData) {
     go('/signup', 'Enter a name, valid email and matching passwords of at least 8 characters');
   }
   const { data, error } = await client.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { data: { full_name: parsed.data.name }, emailRedirectTo: await callbackUrl() } });
-  if (error) go('/signup', error.message);
+  if (error) go('/signup', authErrorMessage(error));
   if (data.session) redirect('/dashboard');
   redirect('/login?message=Check+your+email+to+confirm+your+account');
+}
+export async function resendConfirmation(form: FormData) {
+  const client = await db();
+  if (!client) go('/resend-confirmation', 'Email confirmation is not configured');
+  const email = value(form, 'email');
+  if (!z.string().email().safeParse(email).success) go('/resend-confirmation', 'Enter a valid email address');
+  const { error } = await client.auth.resend({ type: 'signup', email, options: { emailRedirectTo: await callbackUrl() } });
+  if (error) {
+    go('/resend-confirmation', authErrorMessage(error));
+  }
+  go('/resend-confirmation', 'If this address has a pending signup, a confirmation email is on its way');
 }
 export async function googleSignIn() {
   const client = await db();
@@ -132,7 +148,7 @@ export async function requestPasswordReset(form: FormData) {
   const email = value(form, 'email');
   if (!z.string().email().safeParse(email).success) go('/forgot-password', 'Enter a valid email address');
   const { error } = await client.auth.resetPasswordForEmail(email, { redirectTo: await callbackUrl('/reset-password') });
-  if (error) go('/forgot-password', error.message);
+  if (error) go('/forgot-password', authErrorMessage(error));
   go('/forgot-password', 'If an account exists, a password reset email is on its way');
 }
 export async function updatePassword(form: FormData) {
