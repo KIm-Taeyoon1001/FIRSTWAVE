@@ -101,6 +101,8 @@ export async function signUp(form: FormData) {
     password: z.string().min(8),
     confirm_password: z.string().min(8),
     name: z.string().min(2),
+    tester_interests: z.array(z.enum(['Productivity','Developer Tools','Design','Education','Finance','Other'])).max(6),
+    devices: z.string().max(300),
   }).refine(data => data.password === data.confirm_password, {
     path: ['confirm_password'],
     message: 'Passwords do not match',
@@ -109,12 +111,14 @@ export async function signUp(form: FormData) {
     password: String(form.get('password') ?? ''),
     confirm_password: String(form.get('confirm_password') ?? ''),
     name: value(form, 'name'),
+    tester_interests: form.getAll('tester_interests').map(String),
+    devices: value(form, 'devices'),
   });
   if (!parsed.success) {
     if (parsed.error.issues.some(issue => issue.path[0] === 'confirm_password')) go('/signup', 'Passwords do not match');
     go('/signup', 'Enter a name, valid email and matching passwords of at least 8 characters');
   }
-  const { data, error } = await client.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { data: { full_name: parsed.data.name }, emailRedirectTo: await callbackUrl() } });
+  const { data, error } = await client.auth.signUp({ email: parsed.data.email, password: parsed.data.password, options: { data: { full_name: parsed.data.name, tester_interests: parsed.data.tester_interests, devices: parsed.data.devices }, emailRedirectTo: await callbackUrl() } });
   if (error) go('/signup', authErrorMessage(error));
   if (data.session) redirect('/dashboard');
   redirect('/login?message=Check+your+email+to+confirm+your+account');

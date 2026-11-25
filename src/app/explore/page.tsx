@@ -3,6 +3,9 @@ import { Search } from 'lucide-react';
 import { publicProjects } from '@/lib/data';
 import { ProjectCard } from '@/components/project-card';
 import { PublicHeader, Footer } from '@/components/public-shell';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Explore beta testing projects', description: 'Discover early-stage apps and apply to beta test products that match your interests.', alternates: { canonical: '/explore' } };
 
 type Filters = { q?: string; category?: string; platform?: string; recruitment?: string; sort?: string; page?: string };
 const categories = ['Productivity','Developer Tools','Design','Education','Finance','Other'];

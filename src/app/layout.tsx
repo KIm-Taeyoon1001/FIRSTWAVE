@@ -3,5 +3,11 @@ import './polish.css';
 import '../../scripts/marketing.css';
 import './theme.css';
 import type { Metadata } from 'next';
-export const metadata: Metadata = { title: 'FIRSTWAVE — Where Great Apps Meet Their Users', description: 'A developer-first marketplace for beta testing and product feedback.' };
+export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://firstwave.kty10010.workers.dev'),
+  title: { default: 'FIRSTWAVE | Where Great Apps Meet Their Users', template: '%s | FIRSTWAVE' },
+  description: 'Discover early-stage products, recruit beta testers, and collect feedback to build better apps.',
+  openGraph: { type: 'website', siteName: 'FIRSTWAVE', title: 'FIRSTWAVE | Where Great Apps Meet Their Users', description: 'Discover early-stage products and connect with beta testers.' },
+  twitter: { card: 'summary_large_image' },
+};
 export default function RootLayout({ children }: { children: React.ReactNode }) { return <html lang="en" suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: "try{const t=localStorage.getItem('firstwave-theme');document.documentElement.dataset.theme=t==='light'||t==='dark'?t:'dark';document.documentElement.style.colorScheme=document.documentElement.dataset.theme}catch{}" }}/></head><body>{children}</body></html>; }

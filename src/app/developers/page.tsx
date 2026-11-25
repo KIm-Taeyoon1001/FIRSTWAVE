@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { ArrowRight, ChartNoAxesCombined, ClipboardList, MessageSquareText, Users } from 'lucide-react';
 import { PublicHeader, Footer } from '@/components/public-shell';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'For developers', description: 'Recruit beta testers, manage applications, and turn structured feedback into product improvements.', alternates: { canonical: '/developers' } };
 
 const features = [
   { title: 'Campaign briefs', text: 'Set product details, tester requirements, recruitment limits, and testing instructions.', icon: ClipboardList },

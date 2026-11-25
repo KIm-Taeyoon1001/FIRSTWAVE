@@ -3,6 +3,9 @@ import { redirect } from 'next/navigation';
 import { db, currentUser } from '@/lib/supabase';
 import { Brand } from '@/components/public-shell';
 import { ThemeToggle } from '@/components/theme-toggle';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { robots: { index: false, follow: false } };
 
 export const dynamic = 'force-dynamic';
 

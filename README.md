@@ -26,11 +26,17 @@ Requirements: Node.js 20.9 or newer, npm, and a Supabase project.
 
 1. Run `npm install`.
 2. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_SITE_URL`. The project URL for the supplied Supabase project is `https://xxytpyxnxaiwgzglsyel.supabase.co`. The publishable key is available in the project's **Connect** dialog. A legacy anon key also works via `NEXT_PUBLIC_SUPABASE_ANON_KEY`. Never use the service role key in either public variable.
-3. Apply `supabase/migrations/001_initial.sql`, `002_hardening.sql`, `003_workflows.sql`, `004_integrity.sql`, then `005_feedback_answers.sql`, and `006_community.sql` to your Supabase database using the Supabase SQL editor or CLI.
+3. Apply `supabase/migrations/001_initial.sql` through `007_signup_preferences.sql` in numeric order to your Supabase database using the Supabase SQL editor or CLI. If migrations 001–006 are already installed, apply only 007.
 4. In Supabase Auth, enable email sign-in and optionally Google. Add `http://localhost:3000/auth/callback`, `http://localhost:3000/auth/callback?next=/reset-password`, and the corresponding production callback URLs to the redirect allowlist. Set `NEXT_PUBLIC_SITE_URL` to the exact app origin. The default confirmation email can use the PKCE `code` response; the callback also accepts `token_hash` links with `type=email` or `type=recovery` if you customize email templates. Password reset redirects to `/auth/callback?next=/reset-password`.
 5. Run `npm run dev` and open `http://localhost:3000`.
 
-The public pages render with an empty marketplace before Supabase is configured. Authenticated routes need the environment variables and applied migrations.
+The public pages render with an empty marketplace before Supabase is configured. Authenticated routes need the environment variables and applied migrations. New email signups can select testing interests and enter devices; migration 007 stores these in the profile as soon as Supabase creates the account. Google sign-in users can set the same preferences on their profile page.
+
+## Search and advertising preparation
+
+The Next.js Worker serves `/robots.txt` and `/sitemap.xml`. The sitemap includes only published projects. Set `NEXT_PUBLIC_SITE_URL` to the exact production origin in both build and runtime settings so canonical URLs and sitemap links use the deployed domain. Authenticated dashboard and admin pages are marked `noindex`.
+
+Advertising is not enabled by default. After obtaining your own AdSense publisher ID and completing AdSense site review, set `ADSENSE_PUBLISHER_ID` in the Worker runtime environment to a value such as `pub-1234567890123456`. The Worker then serves the matching `/ads.txt`; without a valid ID, the endpoint returns 404. Add your own privacy and contact information and review applicable consent requirements before loading any advertising script. No ad code or publisher ID has been invented or activated.
 
 If npm packages cannot be downloaded, run `npm run preview:static` for the dependency-free static site at `http://127.0.0.1:3000`. It serves the public pages and local dashboard. With a Supabase public key, the static site uses browser authentication; without one, it uses the local demo. It does not run the server-backed marketplace.
 
@@ -67,7 +73,7 @@ Run `npm run build:static`, `npm run test:static`, `npm test`, `npm run typechec
 
 The server-backed marketplace is configured for Cloudflare Workers through OpenNext. Connect this repository to Workers Builds, leave the Build command blank, and set the Deploy command to `npm run deploy`. That script builds the Next.js app with OpenNext and deploys the generated Worker. The Worker name in Cloudflare must match `firstwave` in `wrangler.jsonc`.
 
-Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_SITE_URL` in both Workers Builds variables and Worker runtime variables. Set `NEXT_PUBLIC_SITE_URL` to the deployed origin, such as `https://firstwave.kty10010.workers.dev`. Apply all six SQL migrations to Supabase. In Supabase Auth URL Configuration, set the Site URL to the Worker origin and allowlist `<origin>/auth/callback` and `<origin>/auth/callback?next=%2Freset-password`. Google OAuth requires the Supabase callback URL in Google Cloud Console. The Cloudflare Pages `site/` build remains a separate static preview and does not run server actions.
+Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, and `NEXT_PUBLIC_SITE_URL` in both Workers Builds variables and Worker runtime variables. Set `NEXT_PUBLIC_SITE_URL` to the deployed origin, such as `https://firstwave.kty10010.workers.dev`. Apply all seven SQL migrations to Supabase. In Supabase Auth URL Configuration, set the Site URL to the Worker origin and allowlist `<origin>/auth/callback` and `<origin>/auth/callback?next=%2Freset-password`. Google OAuth requires the Supabase callback URL in Google Cloud Console. The Cloudflare Pages `site/` build remains a separate static preview and does not run server actions.
 
 ## Current scope
 

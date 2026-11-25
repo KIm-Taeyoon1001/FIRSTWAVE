@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import { PublicHeader, Footer } from '@/components/public-shell';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'Pricing', description: 'Learn about FIRSTWAVE early access and future pricing updates.', alternates: { canonical: '/pricing' } };
 
 export default function Pricing() {
   return <>

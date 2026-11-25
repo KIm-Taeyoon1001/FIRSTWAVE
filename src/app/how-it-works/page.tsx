@@ -1,5 +1,8 @@
 import Link from 'next/link';
 import { PublicHeader, Footer } from '@/components/public-shell';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = { title: 'How it works', description: 'See how makers launch beta testing campaigns and testers apply, participate, and share feedback.', alternates: { canonical: '/how-it-works' } };
 
 const makerSteps = [
   ['01 / DEFINE', 'Describe the product and testing goal', 'Add product details, platform, ideal tester profile, instructions, and the questions you want answered.'],

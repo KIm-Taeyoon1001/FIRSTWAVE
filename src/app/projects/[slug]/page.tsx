@@ -5,6 +5,15 @@ import { projectBySlug } from '@/lib/data';
 import { db, currentUser } from '@/lib/supabase';
 import { applyToProject, reportProject } from '@/lib/actions';
 import { PublicHeader, Footer } from '@/components/public-shell';
+import type { Metadata } from 'next';
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const project = await projectBySlug(slug);
+  if (!project || project.status !== 'published') return { robots: { index: false, follow: false } };
+  const description = (project.tagline || project.description || '').slice(0, 160);
+  return { title: project.name, description, alternates: { canonical: `/projects/${encodeURIComponent(slug)}` }, openGraph: { title: project.name, description, type: 'website' } };
+}
 
 type MakerProfile = { display_name: string; bio: string; avatar_url: string | null };
 

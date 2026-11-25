@@ -3,6 +3,8 @@ import { ArrowRight, Check, LockKeyhole, MailCheck, Sparkles } from 'lucide-reac
 import { googleSignIn, signIn, signUp } from '@/lib/actions';
 import { configured } from '@/lib/supabase';
 
+const interests = ['Productivity','Developer Tools','Design','Education','Finance','Other'];
+
 export function AuthForm({ mode, message }: { mode: 'login' | 'signup'; message?: string }) {
   const signup = mode === 'signup';
   return <main className="auth-page"><div className="auth-layout">
@@ -20,6 +22,8 @@ export function AuthForm({ mode, message }: { mode: 'login' | 'signup'; message?
         <label>Email address<input className="field" type="email" name="email" placeholder="you@example.com" required autoComplete="email" disabled={!configured}/>{signup && <span className="auth-field-hint">Use an inbox you can access to confirm your account.</span>}</label>
         <label>Password<input className="field" type="password" name="password" placeholder={signup ? 'At least 8 characters' : 'Enter your password'} required minLength={signup ? 8 : undefined} autoComplete={signup ? 'new-password' : 'current-password'} disabled={!configured}/>{signup && <span className="auth-field-hint">Use at least 8 characters.</span>}</label>
         {signup && <label>Confirm password<input className="field" type="password" name="confirm_password" placeholder="Enter your password again" required minLength={8} autoComplete="new-password" disabled={!configured}/></label>}
+        {signup && <fieldset className="account-fieldset"><legend>What are you interested in?</legend><div className="account-interest-list">{interests.map(interest => <label className="account-interest" key={interest}><input type="checkbox" name="tester_interests" value={interest} disabled={!configured}/>{interest}</label>)}</div><small>Choose any that fit. You can change these later in your profile.</small></fieldset>}
+        {signup && <label>Devices and platforms <span className="auth-field-hint">(optional)</span><input className="field" name="devices" maxLength={300} placeholder="Windows, macOS, iOS, Android…" disabled={!configured}/><span className="auth-field-hint">Helps makers understand which products you can test.</span></label>}
         {!signup && <Link className="small-link" href="/forgot-password" style={{justifySelf:'end'}}>Forgot password?</Link>}
         {signup && <p className="auth-note"><Check size={14}/> Use one account as both a maker and a tester.</p>}
         {signup && <div className="auth-confirmation"><MailCheck size={17}/><span><strong>Confirm by email</strong>We’ll send a link to verify your address before you get started.</span></div>}
